@@ -1,5 +1,6 @@
 <!--// Renders the `message` response data value.-->
-<h3 class="message text-[#39b54a]">{.message}</h3>
+@args message: *ZmplValue
+<h3 class="message text-[#39b54a]">{{message}}</h3>
 
 <div><img class="p-3 mx-auto" src="/jetzig.png" /></div>
 
@@ -15,6 +16,6 @@
   <div>
     <a class="font-bold text-[#39b54a]">Search for an artist, album, or song:</a>
     <input type="text" name="search" hx-include="[name='search']" hx-get="/test" hx-trigger="keyup[keyCode==13]">
-    <button type="button" hx-include="[name='search']" hx-get="/test">You whattup</button>  
+    <button type="button" hx-include="[name='search']" hx-get="/test">Yo whattup</button>  
   </div>
 </div>

@@ -11,11 +11,11 @@
     <div class="text-center pt-10 m-auto">
       <!-- If present, renders the `message_param` response data value, add `?message=hello` to the
       // URL to see the output: -->
-      <h2 class="param text-3xl text-[#f7931e]">{.message_param}</h2>
+      <h2 class="param text-3xl text-[#f7931e]">{{.message_param}}</h2>
 
       <!--// Renders `src/app/views/root/_content.zmpl` with the same template data available:-->
       <div>
-      @partial root/content
+      @partial root/content(message: .welcome_message)
       </div>
     </div>
   </body>
