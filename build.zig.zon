@@ -16,13 +16,17 @@
     // internet connectivity.
     .dependencies = .{
         .jetzig = .{
-            .url = "https://github.com/jetzig-framework/jetzig/archive/31e8ae36e1d7f68166114eefb867c23df352d537.tar.gz",
-            .hash = "1220d368ce21549ccd721d5f303888986fff5714835b1f266a62e329f85eabec8f19",
+            .url = "https://github.com/jetzig-framework/jetzig/archive/68ca4d3bbad05880e6e38fc6d10e7a24e772081e.tar.gz",
+            .hash = "122047ebabab1dfe1bb7f96ffdac98410ffb4850b06dc6b1670ce74aaeaa49bdc08e",
         },
         .iguanas = .{
             .url = "https://github.com/jetzig-framework/iguanas/archive/89c2abf29de0bc31054a9a6feac5a6a83bab0459.tar.gz",
             .hash = "12202fd319a5ab4e124b00e8ddea474d07c19c4e005d77b6c29fc44860904ea01a5c",
         },
+        .sqlite = .{
+            .url = "https://github.com/vrischmann/zig-sqlite/archive/a3095ac.tar.gz",
+            .hash = "12203f7d14722debe8f1a2168f28a262aaa5ec2457a7a975fc7dcc1123ed11597c98",
+        }
     },
     .paths = .{
         // This makes *all* files, recursively, included in this package. It is generally
