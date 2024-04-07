@@ -4,6 +4,8 @@ pub const jetzig = @import("jetzig");
 
 pub const routes = @import("routes");
 
+pub const sqlite = @import("sqlite");
+
 // Override default settings in `jetzig.config` here:
 pub const jetzig_options = struct {
     /// Middleware chain. Add any custom middleware here, or use middleware provided in
@@ -85,6 +87,37 @@ pub const jetzig_options = struct {
 };
 
 pub fn main() !void {
+    var db = try sqlite.Db.init(.{
+        .mode = sqlite.Db.Mode{ .File = "/home/swebb/Source/zuletzt/src/app/database/data.db" },
+        .open_flags = .{
+            .write = true,
+            .create = true,
+        },
+        .threading_mode = .MultiThread,
+    });
+    
+    const create = 
+        \\CREATE TABLE artists ('artist', 'plays')
+    ;
+
+    const query = 
+        \\INSERT INTO artists ('artist', 'plays') VALUES (?,?)
+    ;
+
+    var build = try db.prepare(create);
+    defer build.deinit();
+    
+    try build.exec(.{},.{});
+    
+    var stmt = try db.prepare(query);
+    defer stmt.deinit();
+
+    try stmt.exec(.{}, .{
+        .artist = "Wilco",
+        .plays = 2500,
+    });
+
+
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer std.debug.assert(gpa.deinit() == .ok);
     const allocator = gpa.allocator();

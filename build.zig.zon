@@ -24,8 +24,8 @@
             .hash = "12202fd319a5ab4e124b00e8ddea474d07c19c4e005d77b6c29fc44860904ea01a5c",
         },
         .sqlite = .{
-            .url = "https://github.com/vrischmann/zig-sqlite/archive/a3095ac.tar.gz",
-            .hash = "12203f7d14722debe8f1a2168f28a262aaa5ec2457a7a975fc7dcc1123ed11597c98",
+            .url = "https://github.com/vrischmann/zig-sqlite/archive/6af21bb.tar.gz",
+            .hash = "12202799861d92c7880d1a74f95be099752d7f0420a0c9628dc923ca2b1a22b7bda8",
         }
     },
     .paths = .{
