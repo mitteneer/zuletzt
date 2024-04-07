@@ -96,18 +96,18 @@ pub fn main() !void {
         .threading_mode = .MultiThread,
     });
     
-    const create = 
-        \\CREATE TABLE artists ('artist', 'plays')
-    ;
+    //const create = 
+    //    \\CREATE TABLE artists ('artist', 'plays')
+    //;
 
     const query = 
         \\INSERT INTO artists ('artist', 'plays') VALUES (?,?)
     ;
 
-    var build = try db.prepare(create);
-    defer build.deinit();
+    //var build = try db.prepare(create);
+    //defer build.deinit();
     
-    try build.exec(.{},.{});
+    //try build.exec(.{},.{});
     
     var stmt = try db.prepare(query);
     defer stmt.deinit();

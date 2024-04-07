@@ -1,4 +1,4 @@
-// Renders the `message` response data value.
+<!--// Renders the `message` response data value.-->
 <h3 class="message text-[#39b54a]">{.message}</h3>
 
 <div><img class="p-3 mx-auto" src="/jetzig.png" /></div>
