@@ -27,7 +27,7 @@ const getTrack = \\SELECT artist, track, album, plays FROM tracks WHERE track ==
 const getTrackSearch = \\SELECT url FROM artists WHERE artist == ?
 ;
 
-const getArtistSearch = \\SELECT url FROM artists WHERE artist == ?
+const getArtistSearch = \\SELECT artist, plays FROM artists WHERE artist == ?
 ;
 
 pub var db = loadDb("/home/swebb/Source/zuletzt/src/app/database/data.db");
