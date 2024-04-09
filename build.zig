@@ -15,10 +15,20 @@ pub fn build(b: *std.Build) !void {
     // Example dependency:
     const iguanas_dep = b.dependency("iguanas", .{ .optimize = optimize, .target = target });
     exe.root_module.addImport("iguanas", iguanas_dep.module("iguanas"));
+    
+    const sqlite = b.dependency("sqlite", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    exe.root_module.addImport("sqlite", sqlite.module("sqlite"));
+
+    // links the bundled sqlite3, so leave this out if you link the system one
+    exe.linkLibrary(sqlite.artifact("sqlite"));
 
     // All dependencies **must** be added to imports above this line.
 
-    try jetzig.jetzigInit(b, exe, .{});
+    try jetzig.jetzigInit(b, exe, .{.zmpl_version = .v2});
 
     b.installArtifact(exe);
 
