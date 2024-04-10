@@ -5,7 +5,10 @@ const sqlite = @import("sqlite");
 
 pub fn index(request: *jetzig.Request, data: *jetzig.Data) !jetzig.View {
     _ = data;
-    const allocator = std.heap.page_allocator;
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    defer arena.deinit();
     var db = try sqlite.Db.init(.{
         .mode = sqlite.Db.Mode{ .File = "/home/swebb/Source/zuletzt/src/app/database/data.db" },
         .open_flags = .{
@@ -27,7 +30,7 @@ pub fn index(request: *jetzig.Request, data: *jetzig.Data) !jetzig.View {
                 artist: []u8,
                 plays: usize,
             },
-            allocator,
+            arena.allocator(),
             .{},
             .{ .artist = query},
         );
