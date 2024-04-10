@@ -4,7 +4,7 @@ const queries = @import("../lib/db.zig");
 const sqlite = @import("sqlite");
 
 pub fn index(request: *jetzig.Request, data: *jetzig.Data) !jetzig.View {
-    _ = data;
+    var root = try data.array();
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(allocator);
@@ -16,30 +16,31 @@ pub fn index(request: *jetzig.Request, data: *jetzig.Data) !jetzig.View {
             .create = true,
         },
         .threading_mode = .MultiThread,
-        });
-    //var root = try data.object();
+    });
     const params = try request.params();
-    const query: ?[]const u8 = if (params.get("q")) |param| param.string.value else null;
-    if (query != null){
- //       sql.search(query, db);
+    const queryOrNull: ?[]const u8 = if (params.get("q")) |param| param.string.value else null;
+    if (queryOrNull) |query| {
+        //       sql.search(query, db);
         var artistSearch = try db.prepare(queries.getArtistSearch);
         defer artistSearch.deinit();
 
         const artistResults = try artistSearch.all(
-            struct{
+            struct {
                 artist: []u8,
-                plays: usize,
+                url: usize,
             },
             arena.allocator(),
             .{},
-            .{ .artist = query},
+            .{ .artist = query },
         );
 
-        for (artistResults) |r|{
-            std.log.debug("artist: {s}, Plays: {}", .{r.artist, r.plays});
+        for (artistResults) |r| {
+            std.log.debug("artist: {s}, url: {s}", .{ r.artist, r.url });
+            root.append(data.string(r.artist));
+            root.append(data.string(r.url));
             //std.log.debug("{s}", .{r});
         }
-    } else{
+    } else {
         return request.render(.bad_request);
     }
     //const query =  params.get("q");

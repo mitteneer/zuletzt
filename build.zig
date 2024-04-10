@@ -15,7 +15,7 @@ pub fn build(b: *std.Build) !void {
     // Example dependency:
     const iguanas_dep = b.dependency("iguanas", .{ .optimize = optimize, .target = target });
     exe.root_module.addImport("iguanas", iguanas_dep.module("iguanas"));
-    
+
     const sqlite = b.dependency("sqlite", .{
         .target = target,
         .optimize = optimize,
@@ -28,7 +28,7 @@ pub fn build(b: *std.Build) !void {
 
     // All dependencies **must** be added to imports above this line.
 
-    try jetzig.jetzigInit(b, exe, .{.zmpl_version = .v2});
+    try jetzig.jetzigInit(b, exe, .{ .zmpl_version = .v2 });
 
     b.installArtifact(exe);
 
