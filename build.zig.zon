@@ -14,20 +14,16 @@
     // `zig build --fetch` can be used to fetch all dependencies of a package, recursively.
     // Once all dependencies are fetched, `zig build` no longer requires
     // internet connectivity.
-    .dependencies = .{
-        .jetzig = .{
-            .url = "https://github.com/jetzig-framework/jetzig/archive/68ca4d3bbad05880e6e38fc6d10e7a24e772081e.tar.gz",
-            .hash = "122047ebabab1dfe1bb7f96ffdac98410ffb4850b06dc6b1670ce74aaeaa49bdc08e",
-        },
-        .iguanas = .{
-            .url = "https://github.com/jetzig-framework/iguanas/archive/89c2abf29de0bc31054a9a6feac5a6a83bab0459.tar.gz",
-            .hash = "12202fd319a5ab4e124b00e8ddea474d07c19c4e005d77b6c29fc44860904ea01a5c",
-        },
-        .sqlite = .{
-            .url = "https://github.com/vrischmann/zig-sqlite/archive/6af21bb.tar.gz",
-            .hash = "12202799861d92c7880d1a74f95be099752d7f0420a0c9628dc923ca2b1a22b7bda8",
-        }
-    },
+    .dependencies = .{ .jetzig = .{
+            .url = "https://github.com/jetzig-framework/jetzig/archive/88abe2243d87b28ad110c5fe9fe90b716a6c6583.tar.gz",
+            .hash = "12200d15cef72d4c37a01c930db53c3ffafdc05142462afddeab818701a0291327d1",
+        }, .iguanas = .{
+        .url = "https://github.com/jetzig-framework/iguanas/archive/89c2abf29de0bc31054a9a6feac5a6a83bab0459.tar.gz",
+        .hash = "12202fd319a5ab4e124b00e8ddea474d07c19c4e005d77b6c29fc44860904ea01a5c",
+    }, .sqlite = .{
+        .url = "https://github.com/vrischmann/zig-sqlite/archive/6af21bb.tar.gz",
+        .hash = "12202799861d92c7880d1a74f95be099752d7f0420a0c9628dc923ca2b1a22b7bda8",
+    } },
     .paths = .{
         // This makes *all* files, recursively, included in this package. It is generally
         // better to explicitly list the files and directories instead, to insure that

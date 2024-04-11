@@ -13,5 +13,5 @@ pub const getTrack = \\SELECT artist, track, album, plays FROM tracks WHERE trac
 pub const getTrackSearch = \\SELECT url FROM artists WHERE artist == ?
 ;
 
-pub const getArtistSearch = \\SELECT artist, plays FROM artists WHERE artist LIKE '%' || ? || '%'
+pub const getArtistSearch = \\SELECT artist, url FROM artists WHERE artist LIKE '%' || ? || '%'
 ;

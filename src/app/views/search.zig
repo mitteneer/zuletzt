@@ -27,7 +27,7 @@ pub fn index(request: *jetzig.Request, data: *jetzig.Data) !jetzig.View {
         const artistResults = try artistSearch.all(
             struct {
                 artist: []u8,
-                url: usize,
+                url: []u8,
             },
             arena.allocator(),
             .{},
@@ -36,8 +36,8 @@ pub fn index(request: *jetzig.Request, data: *jetzig.Data) !jetzig.View {
 
         for (artistResults) |r| {
             std.log.debug("artist: {s}, url: {s}", .{ r.artist, r.url });
-            root.append(data.string(r.artist));
-            root.append(data.string(r.url));
+            try root.append(data.string(r.artist));
+            try root.append(data.string(r.url));
             //std.log.debug("{s}", .{r});
         }
     } else {
