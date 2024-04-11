@@ -3,3 +3,4 @@ zig-cache/
 *.core
 static/
 .jetzig
+src/app/database/data.db-journal

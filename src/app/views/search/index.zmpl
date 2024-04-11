@@ -4,15 +4,13 @@
     <th>Album</th>
     <th>Track</th>
   </tr>
-  @zig ZIG
+  @zig {
     for (zmpl.items(.array), 0..) |u,i| {
-      if(@mod(i,2)==0){
+      if(@mod(i,3)==0){
       <tr>
-        <td id="artistUpdate"><a href={{zmpl.items(.array)[i+1].string.value}}>{{u}}</a></td>
-        <td id="albumUpdate">{{i}}</td>
-        <td id="trackUpdate"></td>
+        <td id={{zmpl.items(.array)[i+2].string.value}}><a href={{zmpl.items(.array)[i+1].string.value}}>{{u}}</a></td>
       </tr>
       }
     }
-    ZIG
+  }
 </table>
