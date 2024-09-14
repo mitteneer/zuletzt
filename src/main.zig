@@ -1,10 +1,10 @@
 const std = @import("std");
-
-pub const jetzig = @import("jetzig");
-
+const jetzig = @import("jetzig");
 pub const routes = @import("routes");
+const zmd = @import("zmd");
+const builtin = @import("builtin");
+pub const static = @import("static");
 
-pub const sqlite = @import("sqlite");
 
 // Override default settings in `jetzig.config` here:
 pub const jetzig_options = struct {
@@ -72,13 +72,13 @@ pub const jetzig_options = struct {
             "</ul>",
         };
 
-        pub fn block(allocator: std.mem.Allocator, node: jetzig.zmd.Node) ![]const u8 {
+        pub fn block(allocator: std.mem.Allocator, node: zmd.Node) ![]const u8 {
             return try std.fmt.allocPrint(allocator,
                 \\<pre class="w-1/2 font-mono mt-4 ms-3 bg-gray-900 p-2 text-white"><code class="language-{?s}">{s}</code></pre>
             , .{ node.meta, node.content });
         }
 
-        pub fn link(allocator: std.mem.Allocator, node: jetzig.zmd.Node) ![]const u8 {
+        pub fn link(allocator: std.mem.Allocator, node: zmd.Node) ![]const u8 {
             return try std.fmt.allocPrint(allocator,
                 \\<a class="underline decoration-sky-500" href="{0s}" title={1s}>{1s}</a>
             , .{ node.href.?, node.title.? });
