@@ -5,9 +5,9 @@ const zmd = @import("zmd");
 const builtin = @import("builtin");
 pub const static = @import("static");
 
-
 // Override default settings in `jetzig.config` here:
 pub const jetzig_options = struct {
+    pub const Schema = @import("Schema");
     /// Middleware chain. Add any custom middleware here, or use middleware provided in
     /// `jetzig.middleware` (e.g. `jetzig.middleware.HtmxMiddleware`).
     pub const middleware: []const type = &.{
@@ -95,20 +95,20 @@ pub fn main() !void {
     //    },
     //    .threading_mode = .MultiThread,
     //});
-    
-    //const create = 
+
+    //const create =
     //    \\CREATE TABLE artists ('artist', 'plays')
     //;
 
-    //const query = 
+    //const query =
     //    \\INSERT INTO artists ('artist', 'plays') VALUES (?,?)
     //;
 
     //var build = try db.prepare(create);
     //defer build.deinit();
-    
+
     //try build.exec(.{},.{});
-    
+
     //var stmt = try db.prepare(query);
     //defer stmt.deinit();
 
@@ -116,7 +116,6 @@ pub fn main() !void {
     //    .artist = "Wilco",
     //    .plays = 2500,
     //});
-
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer std.debug.assert(gpa.deinit() == .ok);
