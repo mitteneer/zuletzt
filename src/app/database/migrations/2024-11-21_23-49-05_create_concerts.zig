@@ -7,8 +7,9 @@ pub fn up(repo: anytype) !void {
         "concerts",
         &.{
             t.primaryKey("id", .{}),
-            t.column("date", .datetime, .{}),
+            t.column("id", .integer, .{}),
             t.column("location", .string, .{}),
+            t.column("date", .datetime, .{}),
             t.timestamps(.{}),
         },
         .{},
