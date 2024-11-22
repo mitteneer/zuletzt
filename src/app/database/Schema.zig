@@ -22,18 +22,20 @@ pub const Album = jetquery.Model(
         song_num: i32,
         length: f64,
         play_count: i32,
-        score: f64,
-        avg_song_score: f64,
-        url: []const u8,
         holiday: bool,
         compilation: bool,
-        collaboration: bool,
+        deluxe: bool,
+        live: bool,
         created_at: jetquery.DateTime,
         updated_at: jetquery.DateTime,
     },
     .{
         .relations = .{
             .scrobbles = jetquery.hasMany(.Scrobble, .{}),
+            .ratings = jetquery.hasMany(.Ratings, .{}),
+            .aliases = jetquery.hasMany(.Aliases, .{}),
+            .songs = jetquery.hasMany(.AlbumSongs, .{}),
+            .artists = jetquery.hasMany(.ArtistAlbums, .{}),
         },
     },
 );
@@ -73,16 +75,16 @@ pub const Artist = jetquery.Model(
         album_num: i32,
         song_num: i32,
         play_count: i32,
-        avg_album_score: f64,
-        avg_song_score: f64,
-        url: []const u8,
-        aliased: bool,
         created_at: jetquery.DateTime,
         updated_at: jetquery.DateTime,
     },
     .{
         .relations = .{
             .scrobbles = jetquery.hasMany(.Scrobble, .{}),
+            .aliases = jetquery.hasMany(.Aliases, .{}),
+            .concerts = jetquery.hasMany(.Concerts, .{}),
+            .songs = jetquery.hasMany(.ArtistSongs, .{}),
+            .albums = jetquery.hasMany(.ArtistAlbums, .{}),
         },
     },
 );
@@ -110,21 +112,46 @@ pub const Song = jetquery.Model(
     "songs",
     struct {
         id: i32,
-        name: []const u8,
-        play_count: i32,
+        title: []const u8,
         length: f64,
-        score: f64,
-        url: []const u8,
-        aliased: bool,
-        track_num: i32,
         hidden: bool,
         holiday: bool,
+        play_count: i32,
         created_at: jetquery.DateTime,
         updated_at: jetquery.DateTime,
     },
     .{
         .relations = .{
             .scrobbles = jetquery.hasMany(.Scrobble, .{}),
+            .ratings = jetquery.hasMany(.Ratings, .{}),
+            .aliases = jetquery.hasMany(.Aliases, .{}),
+            .artists = jetquery.hasMany(.ArtistSongs, .{}),
+            .albums = jetquery.hasMany(.AlbumSongs, .{}),
         },
     },
 );
+
+pub const Alias = jetquery.Model(@This(), "aliases", struct {
+    id: i32,
+    reference_id: i32,
+    alias: []const u8,
+    created_at: jetquery.DateTime,
+    updated_at: jetquery.DateTime,
+}, .{});
+
+pub const Concert = jetquery.Model(@This(), "concerts", struct {
+    id: i32,
+    location: []const u8,
+    date: jetquery.DateTime,
+    created_at: jetquery.DateTime,
+    updated_at: jetquery.DateTime,
+}, .{});
+
+pub const Rating = jetquery.Model(@This(), "ratings", struct {
+    id: i32,
+    reference_id: i32,
+    score: f64,
+    date: jetquery.DateTime,
+    created_at: jetquery.DateTime,
+    updated_at: jetquery.DateTime,
+}, .{});
