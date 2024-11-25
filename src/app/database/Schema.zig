@@ -131,27 +131,52 @@ pub const Song = jetquery.Model(
     },
 );
 
-pub const Alias = jetquery.Model(@This(), "aliases", struct {
-    id: i32,
-    reference_id: i32,
-    alias: []const u8,
-    created_at: jetquery.DateTime,
-    updated_at: jetquery.DateTime,
-}, .{});
+pub const Alias = jetquery.Model(
+    @This(),
+    "aliases",
+    struct {
+        id: i32,
+        reference_id: i32,
+        alias: []const u8,
+        created_at: jetquery.DateTime,
+        updated_at: jetquery.DateTime,
+    },
+    .{},
+);
 
-pub const Concert = jetquery.Model(@This(), "concerts", struct {
-    id: i32,
-    location: []const u8,
-    date: jetquery.DateTime,
-    created_at: jetquery.DateTime,
-    updated_at: jetquery.DateTime,
-}, .{});
+pub const Concert = jetquery.Model(
+    @This(),
+    "concerts",
+    struct {
+        id: i32,
+        location: []const u8,
+        date: jetquery.DateTime,
+        created_at: jetquery.DateTime,
+        updated_at: jetquery.DateTime,
+    },
+    .{},
+);
 
-pub const Rating = jetquery.Model(@This(), "ratings", struct {
+pub const Rating = jetquery.Model(
+    @This(),
+    "ratings",
+    struct {
+        id: i32,
+        reference_id: i32,
+        score: f64,
+        date: jetquery.DateTime,
+        created_at: jetquery.DateTime,
+        updated_at: jetquery.DateTime,
+    },
+    .{},
+);
+
+pub const RawScrobble = jetquery.Model(@This(), "raw_scrobbles", struct {
     id: i32,
-    reference_id: i32,
-    score: f64,
-    date: jetquery.DateTime,
+    track: []const u8,
+    artist: []const u8,
+    album: []const u8,
+    date: i32,
     created_at: jetquery.DateTime,
     updated_at: jetquery.DateTime,
 }, .{});
