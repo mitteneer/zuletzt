@@ -16,11 +16,10 @@ pub const jetzig_options = struct {
         jetzig.middleware.HtmxMiddleware,
         // Demo middleware included with new projects. Remove once you are familiar with Jetzig's
         // middleware system.
-        @import("app/middleware/DemoMiddleware.zig"),
     };
 
     // Maximum bytes to allow in request body.
-    // pub const max_bytes_request_body: usize = std.math.pow(usize, 2, 16);
+    pub const max_bytes_request_body: usize = std.math.pow(usize, 2, 32);
 
     // Maximum filesize for `public/` content.
     // pub const max_bytes_public_content: usize = std.math.pow(usize, 2, 20);

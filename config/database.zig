@@ -6,6 +6,7 @@ pub const database = .{
         .username = "postgres",
         .password = "postgres",
         .database = "zuletzt_testing",
+        .pool_size = 16,
     },
 
     .development = .{
@@ -15,6 +16,7 @@ pub const database = .{
         .username = "postgres",
         .password = "postgres",
         .database = "zuletzt_dev",
+        .pool_size = 16,
     },
 
     .production = .{
@@ -24,5 +26,6 @@ pub const database = .{
         .username = "postgres",
         .password = "postgres",
         .database = "zuletzt",
+        .pool_size = 16,
     },
 };

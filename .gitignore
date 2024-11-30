@@ -4,3 +4,4 @@ zig-out/
 static/
 .jetzig
 src/app/database/data.db-journal
+src/app/database/old_migrations/

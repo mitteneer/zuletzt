@@ -8,6 +8,9 @@ pub fn up(repo: anytype) !void {
         &.{
             t.primaryKey("id", .{}),
             t.column("date", .datetime, .{}),
+            t.column("song_id", .integer, .{}),
+            t.column("album_id", .integer, .{ .optional = true }),
+            t.column("artist_id", .integer, .{}),
             t.timestamps(.{}),
         },
         .{},

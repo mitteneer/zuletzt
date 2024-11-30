@@ -20,7 +20,7 @@ pub const Album = jetquery.Model(
         id: i32,
         title: []const u8,
         song_num: i32,
-        length: f64,
+        length: f32,
         play_count: i32,
         holiday: bool,
         compilation: bool,
@@ -95,6 +95,9 @@ pub const Scrobble = jetquery.Model(
     struct {
         id: i32,
         date: jetquery.DateTime,
+        song_id: i32,
+        album_id: ?i32,
+        artist_id: i32,
         created_at: jetquery.DateTime,
         updated_at: jetquery.DateTime,
     },
@@ -113,7 +116,7 @@ pub const Song = jetquery.Model(
     struct {
         id: i32,
         title: []const u8,
-        length: f64,
+        length: f32,
         hidden: bool,
         holiday: bool,
         play_count: i32,
@@ -163,7 +166,7 @@ pub const Rating = jetquery.Model(
     struct {
         id: i32,
         reference_id: i32,
-        score: f64,
+        score: f32,
         date: jetquery.DateTime,
         created_at: jetquery.DateTime,
         updated_at: jetquery.DateTime,
@@ -171,12 +174,17 @@ pub const Rating = jetquery.Model(
     .{},
 );
 
-pub const RawScrobble = jetquery.Model(@This(), "raw_scrobbles", struct {
-    id: i32,
-    track: []const u8,
-    artist: []const u8,
-    album: []const u8,
-    date: i32,
-    created_at: jetquery.DateTime,
-    updated_at: jetquery.DateTime,
-}, .{});
+pub const RawScrobble = jetquery.Model(
+    @This(),
+    "raw_scrobbles",
+    struct {
+        id: i32,
+        track: []const u8,
+        artist: []const u8,
+        album: []const u8,
+        date: i32,
+        created_at: jetquery.DateTime,
+        updated_at: jetquery.DateTime,
+    },
+    .{},
+);

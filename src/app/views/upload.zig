@@ -27,24 +27,30 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
     };
 
     var root = try request.data(.object);
+    var job = try request.job("process_scrobbles");
+    var counter: u16 = 0;
 
     if (try request.file("upload")) |file| {
         const parsed = try std.json.parseFromSlice(lastfm, request.allocator, file.content, .{});
 
         const history = parsed.value;
 
-        //std.debug.print("{s}", .{history.scrobbles[19].artist});
-
         var scrobbles = try root.put("scrobbles", .array);
         for (history.scrobbles) |scrobble| {
             try scrobbles.append(scrobble);
+            //const song_hash: u64 = std.hash.Fnv1a_64.hash(scrobble.track) % 99999989;
+            //job.params.put(scrobble.song, song_hash);
+            //std.debug.print("{d}\n", .{song_hash});
 
             const database_update = jetzig.database.Query(.RawScrobble)
-                .insert(.{ .track = scrobble.track, .album = scrobble.album, .artist = scrobble.artist, .date = @divFloor(scrobble.date, 1000) });
+                .insert(.{ .id = counter, .track = scrobble.track, .album = scrobble.album, .artist = scrobble.artist, .date = @divFloor(scrobble.date, 1000) });
 
             try request.repo.execute(database_update);
+            counter += 1;
         }
     }
+
+    try job.schedule();
 
     var upload_table = try root.put("upload_table", .array);
     try upload_table.append("Track");
