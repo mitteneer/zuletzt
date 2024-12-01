@@ -22,7 +22,11 @@ Licensed under MIT.
     - [ ] From Last.fm (authentication)
     - [ ] From Spotify (.json file)
     - [ ] From other streaming services[^4]
+    - [ ] Import rules
+        - [ ] Simple find/replace
+        - [ ] User-defined regex
 - [ ] Tags
+    - [ ] Genres
 - [ ] MusicBrainz integration
 - [ ] Concerts
     - [ ] Import from Setlist.fm[^5]
@@ -36,7 +40,7 @@ Licensed under MIT.
 
 [^2]: I do not intend to provide the level of granularity that Discogs provides, but a simple toggle that means "I own some version of this release" is all that is necessary.
 
-[^3]: I have not investigated any other service for downloading your listening history from Last.fm, but providing the listening history as a JSOn rather than a CSV is highly preferred. I may eventually provide my own way of downloading Last.fm data as a JSON, but I would prefer to allow users to enter their username, or authenticate, and avoid needing to upload a file altogether.
+[^3]: I have not investigated any other service for downloading your listening history from Last.fm, but providing the listening history as a JSON rather than a CSV is highly preferred. I may eventually provide my own way of downloading Last.fm data as a JSON, but I would prefer to allow users to enter their username, or authenticate, and avoid needing to upload a file altogether.
 
 [^4]: I only intend to allow imports from Last.fm and Spotify at the moment because those are the only data sources I currently rely on. To that extent, I imagine I could import from other sources as well fairly easily, although I do not know what their data dumps look like.
 
