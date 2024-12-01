@@ -19,7 +19,7 @@ pub const jetzig_options = struct {
     };
 
     // Maximum bytes to allow in request body.
-    pub const max_bytes_request_body: usize = std.math.pow(usize, 2, 32);
+    pub const max_bytes_request_body: usize = std.math.pow(usize, 2, 24);
 
     // Maximum filesize for `public/` content.
     // pub const max_bytes_public_content: usize = std.math.pow(usize, 2, 20);

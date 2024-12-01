@@ -1,6 +1,9 @@
 const std = @import("std");
 const jetzig = @import("jetzig");
 const jetquery = @import("jetzig").jetquery;
+//const time = @cImport({
+//    @cInclude("time.h");
+//});
 
 // The `run` function for a job is invoked every time the job is processed by a queue worker
 // (or by the Jetzig server if the job is processed in-line).
@@ -15,6 +18,8 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
     _ = allocator;
     _ = params;
 
+    //const memory = try allocator.alloc(u8, 19);
+
     // Get all scrobbles from the RawScrobbles table
 
     const query = jetzig.database.Query(.RawScrobble).select(.{});
@@ -22,6 +27,10 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
     defer env.repo.free(scrobbles);
 
     for (scrobbles) |scrobble| {
+        //const date = [19]u8{};
+        //time.strftime{ date, 19, "%Y-%m-%d %H:%M:%D", scrobbles.date };
+        //time.strftime(memory, 19, "%Y-%m-%d %H:%M:%S", scrobbles.date);
+        //std.debug.print("{s}", .{memory});
 
         // Make hashes
         const album_hash = std.hash.Fnv1a_64.hash(scrobble.album);
@@ -70,7 +79,7 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
         if (song_check == 0) try env.repo.execute(song_insert);
 
         const scrobble_offset = try jetzig.database.Query(.Scrobble).select(.{}).count().execute(env.repo) orelse unreachable;
-        try jetzig.database.Query(.Scrobble).insert(.{ .id = scrobble_offset + 1, .song_id = song_id, .album_id = album_id, .artist_id = artist_id }).execute(env.repo);
+        try jetzig.database.Query(.Scrobble).insert(.{ .id = scrobble_offset + 1, .song_id = song_id, .album_id = album_id, .artist_id = artist_id, .date = scrobble.date }).execute(env.repo);
     }
     // Clear RawScrobbles when done processing
     try jetzig.database.Query(.RawScrobble).deleteAll().execute(env.repo);
