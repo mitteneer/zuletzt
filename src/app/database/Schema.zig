@@ -182,7 +182,7 @@ pub const RawScrobble = jetquery.Model(
         track: []const u8,
         artist: []const u8,
         album: []const u8,
-        date: i32,
+        date: jetquery.DateTime,
         created_at: jetquery.DateTime,
         updated_at: jetquery.DateTime,
     },

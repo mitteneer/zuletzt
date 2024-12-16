@@ -18,7 +18,7 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
         track: []u8,
         artist: []u8,
         album: []u8,
-        date: i64,
+        date: u64,
     };
 
     const lastfm = struct {
@@ -43,7 +43,7 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
             //std.debug.print("{d}\n", .{song_hash});
 
             const database_update = jetzig.database.Query(.RawScrobble)
-                .insert(.{ .id = counter, .track = scrobble.track, .album = scrobble.album, .artist = scrobble.artist, .date = @divFloor(scrobble.date, 1000) });
+                .insert(.{ .id = counter, .track = scrobble.track, .album = scrobble.album, .artist = scrobble.artist, .date = (scrobble.date * 1000) });
 
             try request.repo.execute(database_update);
             counter += 1;

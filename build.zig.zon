@@ -16,8 +16,8 @@
     // internet connectivity.
     .dependencies = .{
         .jetzig = .{
-            .url = "https://github.com/jetzig-framework/jetzig/archive/7b038505930e8075fc5507c1e396fc073f6a46bb.tar.gz",
-            .hash = "122029af480bfe9fdcbfb6be77ff0bef0c20dba803dceaf48c09de2a99ab375d11c8",
+            .url = "https://github.com/jetzig-framework/jetzig/archive/475ed269525624a67004594ddca44dc8ebea1919.tar.gz",
+            .hash = "1220bc060ba2320fa9fed8e554a8b692a93ef73fa3ab40617b9ed1d928d2029297fb",
         },
     },
     .paths = .{

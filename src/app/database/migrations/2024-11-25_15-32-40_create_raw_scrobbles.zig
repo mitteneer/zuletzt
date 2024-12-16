@@ -10,7 +10,7 @@ pub fn up(repo: anytype) !void {
             t.column("track", .string, .{}),
             t.column("artist", .string, .{}),
             t.column("album", .string, .{}),
-            t.column("date", .integer, .{}),
+            t.column("date", .datetime, .{}),
             t.timestamps(.{}),
         },
         .{},
