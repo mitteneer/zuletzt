@@ -3,8 +3,28 @@
  * <link rel="stylesheet" href="/styles.css" />
  *
  */
+ @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+ @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
-.message {
-    font-weight: bold;
+.title {
+    font-family: 'Roboto';
     font-size: 3rem;
+    font-weight: 500;
+    margin-left: 20px;
+    margin-right: 40px;
+    margin-top: 20px;
+}
+
+.header-link{
+    font-family: 'Roboto';
+    font-size: 1.5rem;
+    margin-right: 20px;
+}
+
+.cell {
+    font-family: 'Noto Sans'
+}
+
+#replaceMe{
+    font-family:'Courier New';
 }

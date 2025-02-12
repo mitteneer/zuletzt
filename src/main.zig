@@ -1,11 +1,13 @@
 const std = @import("std");
-
-pub const jetzig = @import("jetzig");
-
+const jetzig = @import("jetzig");
 pub const routes = @import("routes");
+const zmd = @import("zmd");
+const builtin = @import("builtin");
+pub const static = @import("static");
 
 // Override default settings in `jetzig.config` here:
 pub const jetzig_options = struct {
+    pub const Schema = @import("Schema");
     /// Middleware chain. Add any custom middleware here, or use middleware provided in
     /// `jetzig.middleware` (e.g. `jetzig.middleware.HtmxMiddleware`).
     pub const middleware: []const type = &.{
@@ -14,11 +16,10 @@ pub const jetzig_options = struct {
         jetzig.middleware.HtmxMiddleware,
         // Demo middleware included with new projects. Remove once you are familiar with Jetzig's
         // middleware system.
-        @import("app/middleware/DemoMiddleware.zig"),
     };
 
     // Maximum bytes to allow in request body.
-    // pub const max_bytes_request_body: usize = std.math.pow(usize, 2, 16);
+    pub const max_bytes_request_body: usize = std.math.pow(usize, 2, 24);
 
     // Maximum filesize for `public/` content.
     // pub const max_bytes_public_content: usize = std.math.pow(usize, 2, 20);
@@ -70,13 +71,13 @@ pub const jetzig_options = struct {
             "</ul>",
         };
 
-        pub fn block(allocator: std.mem.Allocator, node: jetzig.zmd.Node) ![]const u8 {
+        pub fn block(allocator: std.mem.Allocator, node: zmd.Node) ![]const u8 {
             return try std.fmt.allocPrint(allocator,
                 \\<pre class="w-1/2 font-mono mt-4 ms-3 bg-gray-900 p-2 text-white"><code class="language-{?s}">{s}</code></pre>
             , .{ node.meta, node.content });
         }
 
-        pub fn link(allocator: std.mem.Allocator, node: jetzig.zmd.Node) ![]const u8 {
+        pub fn link(allocator: std.mem.Allocator, node: zmd.Node) ![]const u8 {
             return try std.fmt.allocPrint(allocator,
                 \\<a class="underline decoration-sky-500" href="{0s}" title={1s}>{1s}</a>
             , .{ node.href.?, node.title.? });
@@ -85,6 +86,36 @@ pub const jetzig_options = struct {
 };
 
 pub fn main() !void {
+    //var db = try sqlite.Db.init(.{
+    //    .mode = sqlite.Db.Mode{ .File = "/home/swebb/Source/zuletzt/src/app/database/data.db" },
+    //    .open_flags = .{
+    //        .write = true,
+    //        .create = true,
+    //    },
+    //    .threading_mode = .MultiThread,
+    //});
+
+    //const create =
+    //    \\CREATE TABLE artists ('artist', 'plays')
+    //;
+
+    //const query =
+    //    \\INSERT INTO artists ('artist', 'plays') VALUES (?,?)
+    //;
+
+    //var build = try db.prepare(create);
+    //defer build.deinit();
+
+    //try build.exec(.{},.{});
+
+    //var stmt = try db.prepare(query);
+    //defer stmt.deinit();
+
+    //try stmt.exec(.{}, .{
+    //    .artist = "Wilco",
+    //    .plays = 2500,
+    //});
+
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer std.debug.assert(gpa.deinit() == .ok);
     const allocator = gpa.allocator();
