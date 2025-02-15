@@ -17,7 +17,7 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
     const Scrobble = struct {
         track: []u8,
         artist: []u8,
-        album: []u8,
+        album: ?[]u8,
         date: u64,
     };
 
@@ -28,25 +28,17 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
 
     var root = try request.data(.object);
     var job = try request.job("process_scrobbles");
-    var counter: u16 = 0;
+    var uploaded_scrobbles = try job.params.put("data", .array);
 
     if (try request.file("upload")) |file| {
-        const parsed = try std.json.parseFromSlice(lastfm, request.allocator, file.content, .{});
-
-        const history = parsed.value;
+        const content = try std.json.parseFromSlice(lastfm, request.allocator, file.content, .{});
+        defer content.deinit();
+        const history = content.value;
 
         var scrobbles = try root.put("scrobbles", .array);
         for (history.scrobbles) |scrobble| {
             try scrobbles.append(scrobble);
-            //const song_hash: u64 = std.hash.Fnv1a_64.hash(scrobble.track) % 99999989;
-            //job.params.put(scrobble.song, song_hash);
-            //std.debug.print("{d}\n", .{song_hash});
-
-            const database_update = jetzig.database.Query(.RawScrobble)
-                .insert(.{ .id = counter, .track = scrobble.track, .album = scrobble.album, .artist = scrobble.artist, .date = (scrobble.date * 1000) });
-
-            try request.repo.execute(database_update);
-            counter += 1;
+            try uploaded_scrobbles.append(scrobble);
         }
     }
 
