@@ -1,6 +1,8 @@
 const std = @import("std");
 const jetzig = @import("jetzig");
 const jetquery = @import("jetzig").jetquery;
+const Scrobble = @import("../../types.zig").LastFMScrobble;
+const lastfm = @import("../../types.zig").LastFM;
 
 pub fn index(request: *jetzig.Request, data: *jetzig.Data) !jetzig.View {
     _ = data;
@@ -14,35 +16,29 @@ pub fn get(id: []const u8, request: *jetzig.Request, data: *jetzig.Data) !jetzig
 }
 
 pub fn post(request: *jetzig.Request) !jetzig.View {
-    const Scrobble = struct {
-        track: []u8,
-        artist: []u8,
-        album: ?[]u8,
-        date: u64,
-    };
-
-    const lastfm = struct {
-        username: []u8,
-        scrobbles: []Scrobble,
-    };
-
     var root = try request.data(.object);
-    var job = try request.job("process_scrobbles");
-    var uploaded_scrobbles = try job.params.put("data", .array);
 
     if (try request.file("upload")) |file| {
         const content = try std.json.parseFromSlice(lastfm, request.allocator, file.content, .{});
         defer content.deinit();
         const history = content.value;
 
-        var scrobbles = try root.put("scrobbles", .array);
-        for (history.scrobbles) |scrobble| {
-            try scrobbles.append(scrobble);
-            try uploaded_scrobbles.append(scrobble);
-        }
-    }
+        var scrobbles_view = try root.put("scrobbles", .array);
 
-    try job.schedule();
+        var job = try request.job("process_scrobbles");
+        var scrobbles_data = try job.params.put("scrobbles", .array);
+
+        for (history.scrobbles) |scrobble| {
+            var value = try scrobbles_data.append(.object);
+            // This is so unnecessary, probably useful once I start doing Spotify integration though
+            inline for (std.meta.fields(Scrobble)) |f| {
+                try value.put(f.name, @as(f.type, @field(scrobble, f.name)));
+            }
+            // Note sure why this works for ZMPL, but not for jobs.
+            try scrobbles_view.append(scrobble);
+        }
+        try job.schedule();
+    }
 
     var upload_table = try root.put("upload_table", .array);
     try upload_table.append("Track");
