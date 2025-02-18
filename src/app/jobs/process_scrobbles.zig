@@ -25,9 +25,9 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             //std.log.debug("{s}", .{scrobble.track});
 
             // Make hashes
-            const album_hash = std.hash.Fnv1a_64.hash(scrobble.album);
-            const artist_hash = std.hash.Fnv1a_64.hash(scrobble.artist);
-            const song_hash = std.hash.Fnv1a_64.hash(scrobble.track);
+            const album_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.album)));
+            const artist_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.artist)));
+            const song_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.track)));
 
             // Make IDs
             // Song:    Song hash XOR artist hash XOR album hash
@@ -48,7 +48,7 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             //          then a descriptive string can be provided to
             //          differentiate after the fact, or in a rule.
 
-            var album_id: u64 = 0;
+            var album_id: i32 = 0;
             const song_id = (song_hash ^ artist_hash ^ album_hash);
             if (artist_hash == album_hash) {
                 album_id = album_hash;

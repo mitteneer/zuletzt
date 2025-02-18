@@ -1,7 +1,7 @@
 pub const LastFMScrobble = struct {
     track: []const u8,
     artist: []const u8,
-    album: ?[]const u8,
+    album: ?[]const u8 = "",
     date: i128,
 };
 
@@ -13,7 +13,7 @@ pub const SafeLastFMScrobble = struct {
 };
 
 // From lastfmstats.com
-pub const LastFM = struct { username: []u8, scrobbles: []LastFMScrobble };
+pub const LastFM = struct { username: []const u8, scrobbles: []LastFMScrobble };
 
 pub const SpotifyScrobble = struct {
     ts: []u8,

@@ -19,16 +19,15 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
 
     if (try request.file("upload")) |file| {
-        const content = try std.json.parseFromSlice(lastfm, request.allocator, file.content, .{});
-        defer content.deinit();
-        const history = content.value;
+        //std.debug.print("{s}", .{file.content});
+        const content = try std.json.parseFromSliceLeaky(lastfm, request.allocator, file.content, .{ .ignore_unknown_fields = true });
 
         var scrobbles_view = try root.put("scrobbles", .array);
 
         var job = try request.job("process_scrobbles");
         var scrobbles_data = try job.params.put("scrobbles", .array);
 
-        for (history.scrobbles) |scrobble| {
+        for (content.scrobbles) |scrobble| {
             var value = try scrobbles_data.append(.object);
             // This is so unnecessary, probably useful once I start doing Spotify integration though
             inline for (std.meta.fields(Scrobble)) |f| {
