@@ -1,7 +1,14 @@
 pub const LastFMScrobble = struct {
-    track: []u8,
-    artist: []u8,
-    album: ?[]u8,
+    track: []const u8,
+    artist: []const u8,
+    album: ?[]const u8,
+    date: i128,
+};
+
+pub const SafeLastFMScrobble = struct {
+    track: []const u8,
+    artist: []const u8,
+    album: []const u8,
     date: u64,
 };
 

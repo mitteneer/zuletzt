@@ -1,7 +1,7 @@
 const std = @import("std");
 const jetzig = @import("jetzig");
 const jetquery = @import("jetzig").jetquery;
-const Scrobble = @import("../../types.zig").LastFMScrobble;
+const Scrobble = @import("../../types.zig").SafeLastFMScrobble;
 const lastfm = @import("../../types.zig").LastFM;
 
 // The `run` function for a job is invoked every time the job is processed by a queue worker
@@ -15,10 +15,14 @@ const lastfm = @import("../../types.zig").LastFM;
 //              - environment: Enum of `{ production, development }`.
 pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig.jobs.JobEnv) !void {
     _ = allocator;
+    //_ = env;
 
     if (params.getT(.array, "scrobbles")) |scrobbles| {
         for (scrobbles.items()) |item| {
-            const scrobble: Scrobble = .{ .track = item.track.?, .artist = item.artist.?, .album = item.album.?, .date = item.date.? };
+            //const fixed_date: u32 = @as(u32, item.getT(.integer, "date").?);
+            const scrobble: Scrobble = .{ .track = item.getT(.string, "track").?, .artist = item.getT(.string, "artist").?, .album = item.getT(.string, "album") orelse "empty", .date = @as(u64, @bitCast(@as(i64, @truncate(@divTrunc(item.getT(.integer, "date").?, 1000))))) };
+
+            //std.log.debug("{s}", .{scrobble.track});
 
             // Make hashes
             const album_hash = std.hash.Fnv1a_64.hash(scrobble.album);
@@ -43,6 +47,7 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             // Artist:  Artist hash. If two artists have the same name,
             //          then a descriptive string can be provided to
             //          differentiate after the fact, or in a rule.
+
             var album_id: u64 = 0;
             const song_id = (song_hash ^ artist_hash ^ album_hash);
             if (artist_hash == album_hash) {
@@ -52,37 +57,22 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             }
             const artist_id = artist_hash;
 
-            const artistalbum_offset = try jetzig.database.Query(.ArtistAlbum).select(.{}).count().execute(env.repo) orelse unreachable;
-            const albumsong_offset = try jetzig.database.Query(.AlbumSong).select(.{}).count().execute(env.repo) orelse unreachable;
-            const artistsong_offset = try jetzig.database.Query(.ArtistSong).select(.{}).count().execute(env.repo) orelse unreachable;
-
             // Inserts
-            const artistalbum_insert = jetzig.database.Query(.ArtistAlbum).insert(.{ .id = 1 + artistalbum_offset, .artist_id = artist_id, .album_id = album_id });
-            const albumsong_insert = jetzig.database.Query(.AlbumSong).insert(.{ .id = 1 + albumsong_offset, .song_id = song_id, .album_id = album_id });
-            const artistsong_insert = jetzig.database.Query(.ArtistSong).insert(.{ .id = 1 + artistsong_offset, .artist_id = artist_id, .song_id = song_id });
-            const album_insert = jetzig.database.Query(.Album).insert(.{ .id = album_id, .title = scrobble.album, .song_num = 0, .length = 0.0, .play_count = 0, .holiday = false, .compilation = false, .deluxe = false, .live = false });
-            const artist_insert = jetzig.database.Query(.Artist).insert(.{ .id = artist_id, .name = scrobble.artist, .album_num = 0, .song_num = 0, .play_count = 0 });
-            const song_insert = jetzig.database.Query(.Song).insert(.{ .id = song_id, .title = scrobble.track, .length = 0.0, .hidden = false, .holiday = false, .play_count = 0 });
+            const album_insert = jetzig.database.Query(.Album).insert(.{ .id = album_id, .name = scrobble.album, .length = null });
+            const artist_insert = jetzig.database.Query(.Artist).insert(.{ .id = artist_id, .name = scrobble.artist, .descriptive_string = "" });
+            const song_insert = jetzig.database.Query(.Song).insert(.{ .id = song_id, .name = scrobble.track, .length = null, .hidden = false });
 
             // Checks
-            const artistalbum_check = try jetzig.database.Query(.ArtistAlbum).where(.{ .{ .artist_id = artist_id }, .AND, .{ .album_id = album_id } }).count().execute(env.repo);
-            const albumsong_check = try jetzig.database.Query(.AlbumSong).where(.{ .{ .album_id = album_id }, .AND, .{ .song_id = song_id } }).count().execute(env.repo);
-            const artistsong_check = try jetzig.database.Query(.ArtistSong).where(.{ .{ .artist_id = artist_id }, .AND, .{ .song_id = song_id } }).count().execute(env.repo);
             const album_check = try jetzig.database.Query(.Album).where(.{.{ .id = album_id }}).count().execute(env.repo);
             const artist_check = try jetzig.database.Query(.Artist).where(.{.{ .id = artist_id }}).count().execute(env.repo);
             const song_check = try jetzig.database.Query(.Song).where(.{.{ .id = song_id }}).count().execute(env.repo);
-
-            // Insert into Intermediate Tables
-            if (artistalbum_check == 0) try env.repo.execute(artistalbum_insert);
-            if (albumsong_check == 0) try env.repo.execute(albumsong_insert);
-            if (artistsong_check == 0) try env.repo.execute(artistsong_insert);
 
             if (album_check == 0) try env.repo.execute(album_insert);
             if (artist_check == 0) try env.repo.execute(artist_insert);
             if (song_check == 0) try env.repo.execute(song_insert);
 
-            const scrobble_offset = try jetzig.database.Query(.Scrobble).select(.{}).count().execute(env.repo) orelse unreachable;
-            try jetzig.database.Query(.Scrobble).insert(.{ .id = scrobble_offset + 1, .song_id = song_id, .album_id = album_id, .artist_id = artist_id, .date = scrobble.date }).execute(env.repo);
+            //const scrobble_offset = try jetzig.database.Query(.Scrobble).select(.{}).count().execute(env.repo) orelse unreachable;
+            //try jetzig.database.Query(.Scrobble).insert(.{ .id = scrobble_offset + 1, .song_id = song_id, .album_id = album_id, .artist_id = artist_id, .date = scrobble.date }).execute(env.repo);
         }
     }
 }

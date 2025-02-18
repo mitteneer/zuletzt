@@ -1,17 +1,18 @@
 const jetquery = @import("jetzig").jetquery;
 
-pub const Album = jetquery.Model(
-    @This(),
-    "albums",
-    struct {
-        id: i32,
-        name: []const u8,
-        length: ?f32,
-        created_at: jetquery.DateTime,
-        updated_at: jetquery.DateTime,
-    },
-    .{},
-);
+pub const Album = jetquery.Model(@This(), "albums", struct {
+    id: i32,
+    name: []const u8,
+    length: ?f32,
+    created_at: jetquery.DateTime,
+    updated_at: jetquery.DateTime,
+}, .{ .relations = .{
+    .scrobbles = jetquery.hasMany(.Scrobble, .{}),
+    .ratings = jetquery.hasMany(.Rating, .{}),
+    .aliases = jetquery.hasMany(.Alias, .{}),
+    .songs = jetquery.hasMany(.Song, .{}),
+    .artists = jetquery.hasMany(.Artist, .{}),
+} });
 
 pub const Alias = jetquery.Model(@This(), "aliases", struct {
     id: i32,
@@ -40,7 +41,7 @@ pub const Masteralbum = jetquery.Model(@This(), "masteralbums", struct {
     created_at: jetquery.DateTime,
     updated_at: jetquery.DateTime,
 }, .{ .relations = .{
-    .albums = jetquery.hasMny(.Album, .{}),
+    .albums = jetquery.hasMany(.Album, .{}),
 } });
 
 pub const Mastersong = jetquery.Model(@This(), "mastersongs", struct {
