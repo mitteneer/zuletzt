@@ -4,11 +4,12 @@ const t = jetquery.schema.table;
 
 pub fn up(repo: anytype) !void {
     try repo.createTable(
-        "album_songs",
+        "songs",
         &.{
             t.primaryKey("id", .{}),
-            t.column("album_id", .integer, .{}),
-            t.column("song_id", .integer, .{}),
+            t.column("name", .string, .{}),
+            t.column("length", .float, .{ .optional = true }),
+            t.column("hidden", .boolean, .{}),
             t.timestamps(.{}),
         },
         .{},
@@ -16,5 +17,5 @@ pub fn up(repo: anytype) !void {
 }
 
 pub fn down(repo: anytype) !void {
-    try repo.dropTable("album_songs", .{});
+    try repo.dropTable("songs", .{});
 }

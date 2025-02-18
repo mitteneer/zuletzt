@@ -40,7 +40,7 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             //          name. As far as I can tell, this is only an
             //          issue for Weezer.
 
-            // Artist   Artist hash. If two artists have the same name,
+            // Artist:  Artist hash. If two artists have the same name,
             //          then a descriptive string can be provided to
             //          differentiate after the fact, or in a rule.
             var album_id: u64 = 0;
