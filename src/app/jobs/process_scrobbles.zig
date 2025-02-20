@@ -22,8 +22,6 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             //const fixed_date: u32 = @as(u32, item.getT(.integer, "date").?);
             const scrobble: Scrobble = .{ .track = item.getT(.string, "track").?, .artist = item.getT(.string, "artist").?, .album = item.getT(.string, "album") orelse "empty", .date = @as(u64, @bitCast(@as(i64, @truncate(@divTrunc(item.getT(.integer, "date").?, 1000))))) };
 
-            //std.log.debug("{s}", .{scrobble.track});
-
             // Make hashes
             const album_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.album)));
             const artist_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.artist)));
@@ -63,16 +61,52 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             const song_insert = jetzig.database.Query(.Song).insert(.{ .id = song_id, .name = scrobble.track, .length = null, .hidden = false });
 
             // Checks
-            const album_check = try jetzig.database.Query(.Album).where(.{.{ .id = album_id }}).count().execute(env.repo);
-            const artist_check = try jetzig.database.Query(.Artist).where(.{.{ .id = artist_id }}).count().execute(env.repo);
-            const song_check = try jetzig.database.Query(.Song).where(.{.{ .id = song_id }}).count().execute(env.repo);
+            const album_check = try jetzig.database.Query(.Album).find(album_id).execute(env.repo);
+            const artist_check = try jetzig.database.Query(.Artist).find(artist_id).execute(env.repo);
+            const song_check = try jetzig.database.Query(.Song).find(song_id).execute(env.repo);
 
-            if (album_check == 0) try env.repo.execute(album_insert);
-            if (artist_check == 0) try env.repo.execute(artist_insert);
-            if (song_check == 0) try env.repo.execute(song_insert);
+            var associative_table_flags: [3]bool = [3]bool{ true, true, true };
+
+            if (album_check == null) {
+                try env.repo.execute(album_insert);
+                try jetzig.database.Query(.Albumartist).insert(.{ .album_id = album_id, .artist_id = artist_id }).execute(env.repo);
+                associative_table_flags[0] = false;
+                try jetzig.database.Query(.Albumsong).insert(.{ .album_id = album_id, .song_id = song_id }).execute(env.repo);
+                associative_table_flags[1] = false;
+            }
+
+            if (artist_check == null) {
+                try env.repo.execute(artist_insert);
+                if (associative_table_flags[0]) try jetzig.database.Query(.Albumartist).insert(.{ .album_id = album_id, .artist_id = artist_id }).execute(env.repo);
+                try jetzig.database.Query(.Songartist).insert(.{ .song_id = song_id, .artist_id = artist_id }).execute(env.repo);
+                associative_table_flags[2] = false;
+            }
+
+            if (song_check == null) {
+                try env.repo.execute(song_insert);
+                if (associative_table_flags[1]) try jetzig.database.Query(.Albumsong).insert(.{ .album_id = album_id, .song_id = song_id }).execute(env.repo);
+                if (associative_table_flags[2]) try jetzig.database.Query(.Songartist).insert(.{ .song_id = song_id, .artist_id = artist_id }).execute(env.repo);
+            }
+
+            //try env.repo.execute(album_insert);
+            //try env.repo.execute(song_insert);
+            // Checks
+
+            // if (album_check == 0) try env.repo.execute(album_insert);
+            // if (artist_check == 0) try env.repo.execute(artist_insert);
+            // if (song_check == 0) try env.repo.execute(song_insert);
 
             //const scrobble_offset = try jetzig.database.Query(.Scrobble).select(.{}).count().execute(env.repo) orelse unreachable;
             //try jetzig.database.Query(.Scrobble).insert(.{ .id = scrobble_offset + 1, .song_id = song_id, .album_id = album_id, .artist_id = artist_id, .date = scrobble.date }).execute(env.repo);
+        }
+    }
+
+    const query = jetzig.database.Query(.Artist).include(.artistalbums, .{});
+    const results = try env.repo.all(query);
+    defer env.repo.free(results);
+    for (results) |result| {
+        for (result.artistalbums) |artistalbum| {
+            std.log.debug("{s}: {any}", .{ result.name, artistalbum.album_id });
         }
     }
 }
