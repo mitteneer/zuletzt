@@ -20,7 +20,7 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
     if (params.getT(.array, "scrobbles")) |scrobbles| {
         for (scrobbles.items()) |item| {
             //const fixed_date: u32 = @as(u32, item.getT(.integer, "date").?);
-            const scrobble: Scrobble = .{ .track = item.getT(.string, "track").?, .artist = item.getT(.string, "artist").?, .album = item.getT(.string, "album") orelse "empty", .date = @as(u64, @bitCast(@as(i64, @truncate(@divTrunc(item.getT(.integer, "date").?, 1000))))) };
+            const scrobble: Scrobble = .{ .track = item.getT(.string, "track").?, .artist = item.getT(.string, "artist").?, .album = item.getT(.string, "album") orelse "", .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").? * 1000)))) };
 
             // Make hashes
             const album_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.album)));
@@ -33,7 +33,11 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             //          the IDs also depend on the hash of the album
             //          they're on, as well as the artist name. As far
             //          as I can tell, this is only as issue for Sufjan
-            //          Steven's `Songs for Christmas`.
+            //          Steven's `Songs for Christmas`. (In practice.
+            //          In reality, there are albums with several untitled
+            //          songs (Selected Ambient Works Vol. II by Aphex Twin,
+            //           ( ) by Sigur Ros, ...) that have working titles
+            //          in their place.)
 
             // Album:   If the album is not self-titled, then
             //          album hash XOR artist hash. This way, if two
@@ -65,6 +69,10 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             const artist_check = try jetzig.database.Query(.Artist).find(artist_id).execute(env.repo);
             const song_check = try jetzig.database.Query(.Song).find(song_id).execute(env.repo);
 
+            // I think there must be a better way to do this next part
+            // There are very few situations where artist_check is null
+            // but song_check/album is not. Also yes, the order of these
+            // checks is weird, I didn't put a lot of thought into it
             var associative_table_flags: [3]bool = [3]bool{ true, true, true };
 
             if (album_check == null) {
@@ -88,25 +96,30 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
                 if (associative_table_flags[2]) try jetzig.database.Query(.Songartist).insert(.{ .song_id = song_id, .artist_id = artist_id }).execute(env.repo);
             }
 
-            //try env.repo.execute(album_insert);
-            //try env.repo.execute(song_insert);
-            // Checks
-
-            // if (album_check == 0) try env.repo.execute(album_insert);
-            // if (artist_check == 0) try env.repo.execute(artist_insert);
-            // if (song_check == 0) try env.repo.execute(song_insert);
-
-            //const scrobble_offset = try jetzig.database.Query(.Scrobble).select(.{}).count().execute(env.repo) orelse unreachable;
-            //try jetzig.database.Query(.Scrobble).insert(.{ .id = scrobble_offset + 1, .song_id = song_id, .album_id = album_id, .artist_id = artist_id, .date = scrobble.date }).execute(env.repo);
+            try jetzig.database.Query(.Scrobble).insert(.{ .song_id = song_id, .album_id = album_id, .date = scrobble.date }).execute(env.repo);
         }
     }
 
-    const query = jetzig.database.Query(.Artist).include(.artistalbums, .{});
-    const results = try env.repo.all(query);
-    defer env.repo.free(results);
-    for (results) |result| {
-        for (result.artistalbums) |artistalbum| {
-            std.log.debug("{s}: {any}", .{ result.name, artistalbum.album_id });
-        }
-    }
+    // I would like to replicate this kind of functionality for several kinds of queries
+    // This one gives me all albums by Dream Theater (it also returns Dream Theater for
+    // each entry, but removing artists.name from the SELECT would remove that)
+    //
+    // SELECT
+    // artists.name, albums.name
+    // FROM
+    // "Albumartists"
+    // INNER JOIN artists
+    // ON "Albumartists".artist_id = artists.id
+    // INNER JOIN albums
+    // ON "Albumartists".album_id = albums.id
+    // WHERE artists.name = 'Dream Theater';
+
+    //const query = jetzig.database.Query(.Artist).include(.artistalbums, .{});
+    //const results = try env.repo.all(query);
+    //defer env.repo.free(results);
+    //for (results) |result| {
+    //    for (result.artistalbums) |artistalbum| {
+    //        std.log.debug("{s}: {any}", .{ result.name, artistalbum.album_id });
+    //    }
+    //}
 }

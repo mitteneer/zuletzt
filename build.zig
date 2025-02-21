@@ -13,6 +13,9 @@ pub fn build(b: *std.Build) !void {
     });
 
     // Example dependency:
+    //
+    const zig_time_dep = b.dependency("zeit", .{});
+    exe.root_module.addImport("zeit", zig_time_dep.module("zeit"));
 
     // All dependencies **must** be added to imports above this line.
 

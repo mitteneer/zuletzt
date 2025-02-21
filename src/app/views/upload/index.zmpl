@@ -16,6 +16,7 @@
   <fieldset>
   <input type="radio" name="t" label="Last.fm">Last.fm</input>
   <input type="radio" name="t" label="Spotify">Spotify</input>
+  Upload Scrobbles after: <input type="datetime-local" name="l" label="date"></input>
   </fieldset>
 </form>
 </body>
