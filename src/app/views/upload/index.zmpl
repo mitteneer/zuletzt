@@ -14,8 +14,8 @@
   <input type="file" name="upload" />
   <input type="submit" value="Submit" />
   <fieldset>
-  <input type="radio" name="t" label="Last.fm">Last.fm</input>
-  <input type="radio" name="t" label="Spotify">Spotify</input>
+  <input type="radio" name="t" label="Last.fm" value="0">Last.fm</input>
+  <input type="radio" name="t" label="Spotify" value="1">Spotify</input>
   Upload Scrobbles after: <input type="datetime-local" name="l" label="date"></input>
   </fieldset>
 </form>

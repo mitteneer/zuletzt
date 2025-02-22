@@ -1,7 +1,7 @@
 const std = @import("std");
 const jetzig = @import("jetzig");
 const jetquery = @import("jetzig").jetquery;
-const Scrobble = @import("../../types.zig").SafeLastFMScrobble;
+const Scrobble = @import("../../types.zig").LastFMScrobble;
 const lastfm = @import("../../types.zig").LastFM;
 
 // The `run` function for a job is invoked every time the job is processed by a queue worker
