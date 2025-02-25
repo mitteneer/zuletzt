@@ -22,6 +22,7 @@ Licensed under MIT.
     - [ ] From Last.fm (authentication)
     - [x] From Spotify (.json file)
     - [ ] From other streaming services[^4]
+    - [ ] "Unofficial scrobbles'[^9]
     - [ ] Import rules
         - [ ] Simple find/replace
         - [ ] User-defined regex
@@ -51,6 +52,8 @@ Licensed under MIT.
 [^7]: I envision something akin to the Custom Reports from [Actual Budget](https://github.com/actualbudget/actual) that will allow users to create their own ways of rating/ranking songs/albums, and view their listening habits.
 
 [^8]: Misleading title, but same functionality as "Lists" on AlbumOfTheYear, although I would like to allow albums and songs to appear on the same list.
+
+[^9]: This is a working title, but I have sources (iPods) that provide a play count, but no play dates, so I can't list them among my usual Scrobbles. However, I would still like to display that information along with everything else, so I would like to provide a way of entering this data into a separate category that can be toggled to display alongside "official" Scrobbles.
 
 ## Contributing
 I am a math student who is interested in programming. I will not be writing quality code. That said, Zuletzt is something that, at the moment, I am very excited about making, and using to relearn some things about programming. Unless contributions are given in the form of code review, or some kind of constructive criticism, it's not likely that I accept pull requests. The project is, however, licensed under the MIT License, so feel free to do what you like with it in your own way.
