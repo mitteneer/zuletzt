@@ -93,5 +93,5 @@ INNER JOIN scrobbles
 ON scrobbles.id = "Scrobbleartists".scrobble_id
 WHERE "Scrobbleartists".artist_id = artists.id
 GROUP BY artists.id
-zuletzt_dev-# ORDER BY scount DESC;
+ORDER BY scount DESC;
 ```
