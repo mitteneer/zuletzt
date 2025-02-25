@@ -100,7 +100,9 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
                 if (associative_table_flags[2]) try jetzig.database.Query(.Songartist).insert(.{ .song_id = song_id, .artist_id = artist_id }).execute(env.repo);
             }
 
-            try jetzig.database.Query(.Scrobble).insert(.{ .song_id = song_id, .album_id = album_id, .date = scrobble.date }).execute(env.repo);
+            const scr_id = try jetzig.database.Query(.Scrobble).insert(.{ .song_id = song_id, .album_id = album_id, .date = scrobble.date }).returning(.{.id}).execute(env.repo);
+            defer env.repo.free(scr_id);
+            try jetzig.database.Query(.Scrobbleartist).insert(.{ .scrobble_id = scr_id.?.id, .artist_id = artist_id }).execute(env.repo);
         }
     }
 
