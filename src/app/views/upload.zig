@@ -60,8 +60,8 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
             },
             1 => {
                 const content: []ScrobbleTypes.SpotifyScrobble = try std.json.parseFromSliceLeaky([]ScrobbleTypes.SpotifyScrobble, request.allocator, file.content, .{});
-                const before_limiting_date: ?zeit.Time = if (before_limiter) (try zeit.Time.fromISO8601(params.get("b").?.string.value)) else null;
-                const after_limiting_date: ?zeit.Time = if (after_limiter) (try zeit.Time.fromISO8601(params.get("a").?.string.value)) else null;
+                const before_limiting_date: zeit.Time = if (before_limiter) (try zeit.Time.fromISO8601(params.get("b").?.string.value)) else (try zeit.instant(.{})).time();
+                const after_limiting_date: zeit.Time = if (after_limiter) (try zeit.Time.fromISO8601(params.get("a").?.string.value)) else (try zeit.instant(.{ .source = .{ .unix_nano = 0 } })).time();
                 appends: for (content) |scrobble| {
                     // A LastFM Scrobble occurs when half a song has been played
                     // or the song plays for 4 minutes, whichever happens first.
@@ -88,7 +88,7 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
                     // I'm separating these on account of the above comment, as well as
                     // this part being kinda complicated
                     const iso_ts = try zeit.Time.fromISO8601(scrobble.ts);
-                    if ((before_limiter or after_limiter) and (iso_ts.after(before_limiting_date.?) or iso_ts.before(after_limiting_date.?))) {
+                    if ((before_limiter or after_limiter) and (iso_ts.after(before_limiting_date) or iso_ts.before(after_limiting_date))) {
                         limited_tracks += 1;
                         continue :appends;
                     }
