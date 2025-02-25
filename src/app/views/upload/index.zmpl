@@ -14,9 +14,10 @@
   <input type="file" name="upload" />
   <input type="submit" value="Submit" />
   <fieldset>
-  <input type="radio" name="t" label="Last.fm" value="0">Last.fm</input>
-  <input type="radio" name="t" label="Spotify" value="1">Spotify</input>
-  Upload Scrobbles after: <input type="datetime-local" name="l" label="date"></input>
+  <input type="radio" name="t" label="Last.fm" value="0" required>Last.fm</input>
+  <input type="radio" name="t" label="Spotify" value="1" required>Spotify</input>
+  <input type="checkbox" name="bbool" id="bbool" value="false" onclick="document.getElementById('abool').setAttribute('required', 'required')"></input>Limit to Scrobbles before: <input type="datetime-local" name="b" label="date-before"></input>
+  <input type="checkbox" name="abool" id="abool" value="false" onclick="document.getElementById('bbool').setAttribute('required', 'required')"></input>Limit to Scrobbles after: <input type="datetime-local" name="a" label="date-after"></input>
   </fieldset>
 </form>
 </body>
