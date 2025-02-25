@@ -8,8 +8,6 @@
   <span>Upload Last.fm or Spotify history file here (in json format).</span>
 </div>
 <form action="/upload" enctype="multipart/form-data" method="POST">
-  <label>Filename</label>
-  <input type="text" name="description" />
   <label>File</label>
   <input type="file" name="upload" />
   <input type="submit" value="Submit" />

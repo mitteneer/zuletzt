@@ -1,9 +1,6 @@
 const std = @import("std");
 const jetzig = @import("jetzig");
 const jetquery = @import("jetzig").jetquery;
-//const Scrobble = @import("../../types.zig").LastFMScrobble;
-//const lastfm = @import("../../types.zig").LastFM;
-//const UploadData = @import("../../types").UploadData;
 const ScrobbleTypes = @import("../../types.zig");
 const zeit = @import("zeit");
 
@@ -24,7 +21,6 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
     if (try request.file("upload")) |file| {
         const params = try request.params();
         const source = try std.fmt.parseInt(u8, params.get("t").?.string.value, 10); // This param is required in HTML
-        // Date limiting is broken atm
         const before_limiter: bool = if (params.get("bbool")) |_| true else false;
         const after_limiter: bool = if (params.get("abool")) |_| true else false;
 
@@ -85,8 +81,6 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
                         continue :appends;
                     }
 
-                    // I'm separating these on account of the above comment, as well as
-                    // this part being kinda complicated
                     const iso_ts = try zeit.Time.fromISO8601(scrobble.ts);
                     if ((before_limiter or after_limiter) and (iso_ts.after(before_limiting_date) or iso_ts.before(after_limiting_date))) {
                         limited_tracks += 1;
