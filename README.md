@@ -18,9 +18,9 @@ Licensed under MIT.
 - [ ] Collections
     - [ ] Import from Discogs[^2]
 - [ ] Import listening history
-    - [ ] From Lastfmstats.com (.json file)[^3]
+    - [x] From Lastfmstats.com (.json file)[^3]
     - [ ] From Last.fm (authentication)
-    - [ ] From Spotify (.json file)
+    - [x] From Spotify (.json file)
     - [ ] From other streaming services[^4]
     - [ ] Import rules
         - [ ] Simple find/replace
