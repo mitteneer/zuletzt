@@ -23,9 +23,19 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             const scrobble: Scrobble = .{ .track = item.getT(.string, "track").?, .artist = item.getT(.string, "artist").?, .album = item.getT(.string, "album") orelse "", .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").? * 1000)))) };
 
             // Make hashes
-            const album_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.album)));
-            const artist_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.artist)));
-            const song_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.track)));
+            //const album_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.album)));
+            //const artist_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.artist)));
+            //const song_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.track)));
+
+            // Create a buffer to hold the metadata to hash. Numbers based on the title of a
+            // particularly long Sufjan Stevens song title, and we're gonna pray the metadata
+            // does not exceed three times it's length.
+            var buffer = [_]u8{undefined} ** (288 * 3);
+            const artist_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.artist)));
+            const album_prehash = try std.fmt.bufPrint(&buffer, "{s}{s}", .{ scrobble.artist, scrobble.album });
+            const album_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(album_prehash)));
+            const song_prehash = try std.fmt.bufPrint(&buffer, "{s}{s}{s}", .{ scrobble.artist, scrobble.album, scrobble.track });
+            const song_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(song_prehash)));
 
             // Make IDs
             // Song:    Song hash XOR artist hash XOR album hash
@@ -50,14 +60,8 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             //          then a descriptive string can be provided to
             //          differentiate after the fact, or in a rule.
 
-            var album_id: i32 = 0;
-            const song_id = (song_hash ^ artist_hash ^ album_hash);
-            if (artist_hash == album_hash) {
-                album_id = album_hash;
-            } else {
-                album_id = (artist_hash ^ album_hash);
-            }
-            const artist_id = artist_hash;
+            //var album_id: i32 = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(formed)));
+            //const song_id = (song_hash ^ artist_hash ^ album_hash);
 
             // Inserts
             const album_insert = jetzig.database.Query(.Album).insert(.{ .id = album_id, .name = scrobble.album, .length = null });

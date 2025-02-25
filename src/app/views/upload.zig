@@ -73,7 +73,7 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
                     // the requirement. Until then, if it goes 30 seconds, or the
                     // reason_end field reads "trackdone", then it counts as a Scrobble.
                     // May consider giving user control to the minimum millisecond requirement.
-                    if (scrobble.reason_end != null and (scrobble.ms_played < 30_000 and !std.mem.eql(u8, scrobble.reason_end.?, "trackdone"))) {
+                    if (scrobble.ms_played < 30_000 and (scrobble.reason_end == null or !std.mem.eql(u8, scrobble.reason_end.?, "trackdone"))) {
                         skipped_tracks += 1;
                         continue :appends;
                     }
