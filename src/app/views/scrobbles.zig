@@ -7,12 +7,8 @@ pub fn index(request: *jetzig.Request, data: *jetzig.Data) !jetzig.View {
 }
 
 pub fn get(id: []const u8, request: *jetzig.Request, data: *jetzig.Data) !jetzig.View {
-    var root = try request.data(.object);
-    const params = try request.params();
-    if (params.get("ar")) |param| {
-        const artists = try jetzig.database.Query(.Artists).select(.{.id, .name});
-        const 
-    }
+    _ = id;
+    _ = data;
     return request.render(.ok);
 }
 
