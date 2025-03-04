@@ -26,9 +26,11 @@ pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
     const query = jetzig.database.Query(.Albumartist).include(.album, .{ .select = .{ .name, .id } }).join(.inner, .artist).where(.{ .artist = .{ .id = id } });
     const albums = try request.repo.all(query);
     for (albums) |album| {
+        const scrobbles = try jetzig.database.Query(.Scrobble).where(.{ .album_id = album.album.id }).count().execute(request.repo);
         var album_view = try albums_view.append(.object);
         try album_view.put("name", album.album.name);
         try album_view.put("url", album.album.id);
+        try album_view.put("scrobbles", scrobbles);
         //std.log.debug("{s}", .{album.album.name});
     }
     return request.render(.ok);
