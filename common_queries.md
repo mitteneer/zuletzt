@@ -100,7 +100,7 @@ INNER JOIN artists
 ON "Scrobbleartists".artist_id = artists.id
 INNER JOIN scrobbles
 ON "Scrobbleartists".scrobble_id = scrobbles.id
-GROUP BY artists.name
+GROUP BY artists.id
 ORDER BY artists.name ASC;
 ```
 
@@ -110,7 +110,7 @@ SELECT songs.name, MIN(scrobbles.date)
 FROM scrobbles
 INNER JOIN songs
 ON scrobbles.song_id = songs.id
-GROUP BY songs.name
+GROUP BY songs.id
 ORDER BY songs.name ASC;
 ```
 
@@ -120,7 +120,7 @@ SELECT albums.name, MIN(scrobbles.date)
 FROM scrobbles
 INNER JOIN albums
 ON scrobbles.album_id = albums.id
-GROUP BY albums.name
+GROUP BY albums.id
 ORDER BY albums.name ASC;
 ```
 
@@ -133,7 +133,7 @@ ON "Scrobbleartists".artist_id = artists.id
 INNER JOIN scrobbles
 ON "Scrobbleartists".scrobble_id = scrobbles.id
 WHERE songs.id = scrobbles.song_id AND artists.name = {ARTIST}
-GROUP BY songs.name
+GROUP BY songs.id
 ORDER BY count DESC;
 ```
 
@@ -146,6 +146,19 @@ ON "Scrobbleartists".artist_id = artists.id
 INNER JOIN scrobbles
 ON "Scrobbleartists".scrobble_id = scrobbles.id
 WHERE albums.id = scrobbles.album_id AND artists.name = {ARTIST}
-GROUP BY albums.name
+GROUP BY albums.id
+ORDER BY count DESC;
+```
+
+Select all songs from an album specified by an ID, and sort by plays
+```sql
+SELECT songs.name, COUNT(scrobbles.song_id) AS count
+FROM "Albumsongs"
+INNER JOIN songs
+ON songs.id = "Albumsongs".song_id
+INNER JOIN scrobbles
+ON scrobbles.song_id = "Albumsongs".song_id
+WHERE "Albumsongs".album_id = {ALBUM_ID}
+GROUP BY songs.id
 ORDER BY count DESC;
 ```
