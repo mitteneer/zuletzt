@@ -1,8 +1,9 @@
 .{
-    .name = "zuletzt",
+    .name = .zuletzt,
     // This is a [Semantic Version](https://semver.org/).
     // In a future version of Zig it will be used for package deduplication.
     .version = "0.0.0",
+    .fingerprint = 0xfe1b5c182b3fe5f,
 
     // This field is optional.
     // This is currently advisory only; Zig does not yet do anything
@@ -16,8 +17,8 @@
     // internet connectivity.
     .dependencies = .{
         .jetzig = .{
-            .url = "https://github.com/jetzig-framework/jetzig/archive/8a4f91f26a5d6a9b34a47011e63e779280590bc2.tar.gz",
-            .hash = "1220dac633f4b6a3c40d2b8d5a3cb2fdd513601eb762ccb15c418e0646923d42cfe9",
+            .url = "https://github.com/jetzig-framework/jetzig/archive/d3157e4247211091127daba88a2552af3be8f5ed.tar.gz",
+            .hash = "jetzig-0.0.0-IpAgLe0QDwC-6XH_ElHKUmPGxGxr1XdgiLeHEalerM7B",
         },
         .zeit = .{
             .url = "https://github.com/rockorager/zeit/archive/refs/heads/main.tar.gz",
@@ -31,10 +32,12 @@
         // in the same contents hash.
         "",
         // For example...
-        //"build.zig",
-        //"build.zig.zon",
-        //"src",
-        //"LICENSE",
-        //"README.md",
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "LICENSE",
+        "README.md",
+        "public",
+        "config",
     },
 }

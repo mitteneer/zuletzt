@@ -1,12 +1,31 @@
 const std = @import("std");
 const jetzig = @import("jetzig");
+const jetquery = @import("jetzig").jetquery;
 
 pub fn index(request: *jetzig.Request) !jetzig.View {
+    var root = try request.data(.object);
+    var albums_view = try root.put("albums", .array);
+    const query = jetzig.database.Query(.Album).select(.{}).orderBy(.{ .name = .asc });
+    const albums = try request.repo.all(query);
+    for (albums) |album| {
+        var album_view = try albums_view.append(.object);
+        try album_view.put("name", album.name);
+        try album_view.put("url", album.id);
+    }
     return request.render(.ok);
 }
 
 pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
-    _ = id;
+    var root = try request.data(.object);
+    try root.put("album_id", id);
+    var songs_view = try root.put("songs", .array);
+    const query = jetzig.database.Query(.Albumsong).include(.song, .{ .select = .{ .name, .id } }).join(.inner, .album).where(.{ .album = .{ .id = id } });
+    const songs = try request.repo.all(query);
+    for (songs) |song| {
+        var song_view = try songs_view.append(.object);
+        try song_view.put("name", song.song.name);
+        try song_view.put("url", song.song.id);
+    }
     return request.render(.ok);
 }
 
@@ -38,12 +57,11 @@ pub fn delete(id: []const u8, request: *jetzig.Request) !jetzig.View {
     return request.render(.ok);
 }
 
-
 test "index" {
     var app = try jetzig.testing.app(std.testing.allocator, @import("routes"));
     defer app.deinit();
 
-    const response = try app.request(.GET, "/artist", .{});
+    const response = try app.request(.GET, "/album", .{});
     try response.expectStatus(.ok);
 }
 
@@ -51,7 +69,7 @@ test "get" {
     var app = try jetzig.testing.app(std.testing.allocator, @import("routes"));
     defer app.deinit();
 
-    const response = try app.request(.GET, "/artist/example-id", .{});
+    const response = try app.request(.GET, "/album/example-id", .{});
     try response.expectStatus(.ok);
 }
 
@@ -59,7 +77,7 @@ test "new" {
     var app = try jetzig.testing.app(std.testing.allocator, @import("routes"));
     defer app.deinit();
 
-    const response = try app.request(.GET, "/artist/new", .{});
+    const response = try app.request(.GET, "/album/new", .{});
     try response.expectStatus(.ok);
 }
 
@@ -67,7 +85,7 @@ test "edit" {
     var app = try jetzig.testing.app(std.testing.allocator, @import("routes"));
     defer app.deinit();
 
-    const response = try app.request(.GET, "/artist/example-id/edit", .{});
+    const response = try app.request(.GET, "/album/example-id/edit", .{});
     try response.expectStatus(.ok);
 }
 
@@ -75,7 +93,7 @@ test "post" {
     var app = try jetzig.testing.app(std.testing.allocator, @import("routes"));
     defer app.deinit();
 
-    const response = try app.request(.POST, "/artist", .{});
+    const response = try app.request(.POST, "/album", .{});
     try response.expectStatus(.created);
 }
 
@@ -83,7 +101,7 @@ test "put" {
     var app = try jetzig.testing.app(std.testing.allocator, @import("routes"));
     defer app.deinit();
 
-    const response = try app.request(.PUT, "/artist/example-id", .{});
+    const response = try app.request(.PUT, "/album/example-id", .{});
     try response.expectStatus(.ok);
 }
 
@@ -91,7 +109,7 @@ test "patch" {
     var app = try jetzig.testing.app(std.testing.allocator, @import("routes"));
     defer app.deinit();
 
-    const response = try app.request(.PATCH, "/artist/example-id", .{});
+    const response = try app.request(.PATCH, "/album/example-id", .{});
     try response.expectStatus(.ok);
 }
 
@@ -99,6 +117,6 @@ test "delete" {
     var app = try jetzig.testing.app(std.testing.allocator, @import("routes"));
     defer app.deinit();
 
-    const response = try app.request(.DELETE, "/artist/example-id", .{});
+    const response = try app.request(.DELETE, "/album/example-id", .{});
     try response.expectStatus(.ok);
 }

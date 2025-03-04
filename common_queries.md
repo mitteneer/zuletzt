@@ -1,7 +1,3 @@
-> [!note] Notice
-> Queries involving artists are likely inaccurate due to database structure and
-> limitations of scrobbles. Specifics and fixes are being planned.
-
 Get all albums from specified artist:
 ```sql
 SELECT artists.name, albums.name
@@ -94,4 +90,62 @@ ON scrobbles.id = "Scrobbleartists".scrobble_id
 WHERE "Scrobbleartists".artist_id = artists.id
 GROUP BY artists.id
 ORDER BY scount DESC;
+```
+
+Sort all artists by alphabetical order, and include the first time you listened to that artist:
+```sql
+SELECT artists.name, MIN(scrobbles.date)
+FROM "Scrobbleartists"
+INNER JOIN artists
+ON "Scrobbleartists".artist_id = artists.id
+INNER JOIN scrobbles
+ON "Scrobbleartists".scrobble_id = scrobbles.id
+GROUP BY artists.name
+ORDER BY artists.name ASC;
+```
+
+Sort all songs by alphabetical order, and include the first time you listened to that song:
+```sql
+SELECT songs.name, MIN(scrobbles.date)
+FROM scrobbles
+INNER JOIN songs
+ON scrobbles.song_id = songs.id
+GROUP BY songs.name
+ORDER BY songs.name ASC;
+```
+
+Sort all albums by alphabetical order, and include the first time you listened to that album:
+```sql
+SELECT albums.name, MIN(scrobbles.date)
+FROM scrobbles
+INNER JOIN albums
+ON scrobbles.album_id = albums.id
+GROUP BY albums.name
+ORDER BY albums.name ASC;
+```
+
+Select all songs by specified artists, include the number of plays of each song, and sort by plays:
+```sql
+SELECT songs.name, COUNT(scrobbles.song_id) as count
+FROM songs, "Scrobbleartists"
+INNER JOIN artists
+ON "Scrobbleartists".artist_id = artists.id
+INNER JOIN scrobbles
+ON "Scrobbleartists".scrobble_id = scrobbles.id
+WHERE songs.id = scrobbles.song_id AND artists.name = {ARTIST}
+GROUP BY songs.name
+ORDER BY count DESC;
+```
+
+Select all albums by specified artist, include the number of plays of each album, and sort by plays:
+```sql
+SELECT albums.name, COUNT(scrobbles.song_id) as count
+FROM albums, "Scrobbleartists"
+INNER JOIN artists
+ON "Scrobbleartists".artist_id = artists.id
+INNER JOIN scrobbles
+ON "Scrobbleartists".scrobble_id = scrobbles.id
+WHERE albums.id = scrobbles.album_id AND artists.name = {ARTIST}
+GROUP BY albums.name
+ORDER BY count DESC;
 ```
