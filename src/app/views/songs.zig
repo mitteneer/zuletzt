@@ -2,6 +2,15 @@ const std = @import("std");
 const jetzig = @import("jetzig");
 
 pub fn index(request: *jetzig.Request) !jetzig.View {
+    var root = try request.data(.object);
+    var songs_view = try root.put("songs", .array);
+    const query = jetzig.database.Query(.Song).select(.{}).orderBy(.{ .name = .asc });
+    const songs = try request.repo.all(query);
+    for (songs) |song| {
+        var song_view = try songs_view.append(.object);
+        try song_view.put("name", song.name);
+        try song_view.put("url", song.id);
+    }
     return request.render(.ok);
 }
 
@@ -37,7 +46,6 @@ pub fn delete(id: []const u8, request: *jetzig.Request) !jetzig.View {
     _ = id;
     return request.render(.ok);
 }
-
 
 test "index" {
     var app = try jetzig.testing.app(std.testing.allocator, @import("routes"));
