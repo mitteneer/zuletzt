@@ -5,13 +5,13 @@
 </head>
 <body>
 @partial partials/header
-<h1> Artists</h1>
+<h1>Albums</h1>
 <table>
 <tr>
 <th>Name</th>
-@for (.artists) |artist| {
+@for (.albums) |album| {
   <tr>
-  <td class=cell><a href="/artists/{{artist.url}}">{{artist.name}}</a></td>
+  <td class=cell><a href="/albums/{{album.url}}">{{album.name}}</a></td>
   </tr>
 }
 </table>
