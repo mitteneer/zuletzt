@@ -19,11 +19,9 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
 }
 
 pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
-    //const artist_name = jetzig.database.Query(.Artist).find().select(.{.name}).execute(request.repo);
-    std.log.debug("page: {s}", .{id});
+    const artist = try jetzig.database.Query(.Artist).find(id).execute(request.repo);
     var root = try request.data(.object);
-    //try root.put("artist", artist_name);
-    try root.put("artist_id", id);
+    try root.put("artist", artist.?.name);
     var albums_view = try root.put("albums", .array);
     const query = jetzig.database.Query(.Albumartist).include(.album, .{ .select = .{ .name, .id } }).join(.inner, .artist).where(.{ .artist = .{ .id = id } });
     const albums = try request.repo.all(query);

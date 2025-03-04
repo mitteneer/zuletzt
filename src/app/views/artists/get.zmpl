@@ -5,7 +5,7 @@
 </head>
 <body>
 @partial partials/header
-<h1>no one lol</h1>
+<h1>{{.artist}}</h1>
 <table>
 <tr>
 <th>Name</th>
