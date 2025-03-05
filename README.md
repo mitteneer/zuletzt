@@ -49,7 +49,7 @@ Licensed under MIT.
     - [ ] Genres
     - [ ] Owned
     - [ ] Holiday
-- [ ] MusicBrainz integration
+- [ ] [MusicBrainz integration](https://musicbrainz.org/doc/libmusicbrainz)[^11]
 - [ ] Concerts
     - [ ] Import from Setlist.fm[^5]
 - [ ] Ratings
@@ -77,6 +77,8 @@ Licensed under MIT.
 [^9]: This is a working title, but I have sources (iPods) that provide a play count, but no play dates, so I can't list them among my usual Scrobbles. However, I would still like to display that information along with everything else, so I would like to provide a way of entering this data into a separate category that can be toggled to display alongside "official" Scrobbles.
 
 [^10]: Would probably select the album with the most scrobbles
+
+[^11]: I probably don't understand it well enough, but it appears that I should be able to do this using `@cImport` and/or `translate-c` on the original MusicBrainz source, but it's not all clear to me on how that would work yet. This is a necessary step for what I have planned however, so we'll see where it goes.
 
 ## Contributing
 I am a math student who is interested in programming. I will not be writing quality code. That said, Zuletzt is something that, at the moment, I am very excited about making, and using to relearn some things about programming. Unless contributions are given in the form of code review, or some kind of constructive criticism, it's not likely that I accept pull requests. The project is, however, licensed under the MIT License, so feel free to do what you like with it in your own way.
