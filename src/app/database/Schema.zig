@@ -47,7 +47,7 @@ pub const Artist = jetquery.Model(
     },
     .{
         .relations = .{
-            .scrobbles = jetquery.hasMany(.Scrobble, .{}),
+            .scrobbleartists = jetquery.hasMany(.Scrobbleartist, .{}),
             .aliases = jetquery.hasMany(.Alias, .{}),
             .artistsongs = jetquery.hasMany(.Songartist, .{}),
             .mastersongs = jetquery.hasMany(.Mastersong, .{}),
@@ -124,7 +124,7 @@ pub const Scrobble = jetquery.Model(
         .relations = .{
             .song = jetquery.belongsTo(.Song, .{}),
             .album = jetquery.belongsTo(.Album, .{}),
-            .artists = jetquery.hasMany(.Artist, .{}),
+            .scrobbleartists = jetquery.hasMany(.Scrobbleartist, .{}),
         },
     },
 );

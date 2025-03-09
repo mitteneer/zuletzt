@@ -5,5 +5,4 @@ static/
 .jetzig
 src/app/database/data.db-journal
 src/app/database/old_migrations/
-src/lib/time.h
-
+src/lib
