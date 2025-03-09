@@ -13,7 +13,26 @@ Zuletzt means "last" in German.
 Licensed under MIT.
 
 ## To-Do List:
-- [ ] Last.fm statistics
+- [ ] Entity statistics
+    - [x] See all artists under "/artists"
+        - [ ] List all songs on artist page, with respective album
+        - [x] List all albums on artist page
+        - [x] Include number of plays for each
+    - [x] See all albums under "/albums"
+        - [x] See all songs from album
+        - [ ] Include number of plays
+    - [x] See all songs under "/songs"
+        - [ ] Include respective artist(s)
+        - [ ] Include respective album[^10]
+        - [ ] Inclue number of plays
+    - [ ] Create disambiguation pages
+        - [ ] Artists
+        - [ ] Albums
+        - [ ] Songs
+    - [ ] Toggleable default sorting method
+        - [ ] Default to sorting by plays
+    - [ ] Filter by dates
+    - [ ] Highlight specific high-performing entities
 - [ ] Lastfmstats.com statistics[^1]
 - [ ] Collections
     - [ ] Import from Discogs[^2]
@@ -22,13 +41,15 @@ Licensed under MIT.
     - [ ] From Last.fm (authentication)
     - [x] From Spotify (.json file)
     - [ ] From other streaming services[^4]
-    - [ ] "Unofficial scrobbles'[^9]
+    - [ ] "Unofficial scrobbles"[^9]
     - [ ] Import rules
         - [ ] Simple find/replace
         - [ ] User-defined regex
 - [ ] Tags
     - [ ] Genres
-- [ ] MusicBrainz integration
+    - [ ] Owned
+    - [ ] Holiday
+- [ ] [MusicBrainz integration](https://musicbrainz.org/doc/libmusicbrainz)[^11]
 - [ ] Concerts
     - [ ] Import from Setlist.fm[^5]
 - [ ] Ratings
@@ -54,6 +75,10 @@ Licensed under MIT.
 [^8]: Misleading title, but same functionality as "Lists" on AlbumOfTheYear, although I would like to allow albums and songs to appear on the same list.
 
 [^9]: This is a working title, but I have sources (iPods) that provide a play count, but no play dates, so I can't list them among my usual Scrobbles. However, I would still like to display that information along with everything else, so I would like to provide a way of entering this data into a separate category that can be toggled to display alongside "official" Scrobbles.
+
+[^10]: Would probably select the album with the most scrobbles
+
+[^11]: I probably don't understand it well enough, but it appears that I should be able to do this using `@cImport` and/or `translate-c` on the original MusicBrainz source, but it's not all clear to me on how that would work yet. This is a necessary step for what I have planned however, so we'll see where it goes.
 
 ## Contributing
 I am a math student who is interested in programming. I will not be writing quality code. That said, Zuletzt is something that, at the moment, I am very excited about making, and using to relearn some things about programming. Unless contributions are given in the form of code review, or some kind of constructive criticism, it's not likely that I accept pull requests. The project is, however, licensed under the MIT License, so feel free to do what you like with it in your own way.
