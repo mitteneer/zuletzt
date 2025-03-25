@@ -206,13 +206,20 @@ pub const Albumsong = jetquery.Model(
     },
 );
 
-pub const Scrobbleartist = jetquery.Model(@This(), "Scrobbleartists", struct {
-    id: i32,
-    scrobble_id: i32,
-    artist_id: i32,
-    created_at: jetquery.DateTime,
-    updated_at: jetquery.DateTime,
-}, .{ .relations = .{
-    .scrobble = jetquery.belongsTo(.Scrobble, .{}),
-    .artist = jetquery.belongsTo(.Artist, .{}),
-} });
+pub const Scrobbleartist = jetquery.Model(
+    @This(),
+    "Scrobbleartists",
+    struct {
+        id: i32,
+        scrobble_id: i32,
+        artist_id: i32,
+        created_at: jetquery.DateTime,
+        updated_at: jetquery.DateTime,
+    },
+    .{
+        .relations = .{
+            .scrobble = jetquery.belongsTo(.Scrobble, .{}),
+            .artist = jetquery.belongsTo(.Artist, .{}),
+        },
+    },
+);

@@ -12,7 +12,7 @@
 @for (.albums) |album| {
   <tr>
   <td class=cell><a href="/albums/{{album.url}}">{{album.name}}</a></td>
-  <td calss=cell>{{album.scrobbles}}</td>
+  <td class=cell>{{album.scrobbles}}</td>
   </tr>
 }
 </table>

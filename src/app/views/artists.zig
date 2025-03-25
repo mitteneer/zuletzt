@@ -8,11 +8,13 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
     const query = jetzig.database.Query(.Artist).select(.{}).orderBy(.{ .name = .asc });
     const artists = try request.repo.all(query);
     for (artists) |artist| {
+        const scrobbles = try jetzig.database.Query(.Scrobbleartist).where(.{ .artist_id = artist.id }).count().execute(request.repo);
         var artist_view = try artists_view.append(.object);
         //const output = try request.allocator.dupe(u8, artist.name);
         //std.mem.replaceScalar(u8, output, ' ', '_');
         try artist_view.put("name", artist.name);
         try artist_view.put("url", artist.id);
+        try artist_view.put("scrobbles", scrobbles);
     }
 
     return request.render(.ok);
@@ -23,7 +25,10 @@ pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
     try root.put("artist", artist.?.name);
     var albums_view = try root.put("albums", .array);
-    const query = jetzig.database.Query(.Albumartist).include(.album, .{ .select = .{ .name, .id } }).join(.inner, .artist).where(.{ .artist = .{ .id = id } });
+    const query = jetzig.database.Query(.Albumartist)
+        .include(.album, .{ .select = .{ .name, .id } })
+        .join(.inner, .artist)
+        .where(.{ .artist = .{ .id = id } });
 
     //const query = jetzig.database.Query(.Albumartist)
     //    .select(.{ .artist_id, jetquery.sql.count(.album_id) })
@@ -32,13 +37,13 @@ pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
 
     const albums = try request.repo.all(query);
     for (albums) |album| {
-        //const scrobbles = try jetzig.database.Query(.Scrobble).where(.{ .album_id = album.album.id }).count().execute(request.repo);
+        const scrobbles = try jetzig.database.Query(.Scrobble).where(.{ .album_id = album.album.id }).count().execute(request.repo);
         var album_view = try albums_view.append(.object);
         try album_view.put("name", album.album.name);
         try album_view.put("url", album.album.id);
         //try album_view.put("name", album.count__album_id);
         //try album_view.put("url", album.count__album_id);
-        try album_view.put("scrobbles", 6);
+        try album_view.put("scrobbles", scrobbles);
         //std.log.debug("{s}", .{album.album.name});
     }
     return request.render(.ok);

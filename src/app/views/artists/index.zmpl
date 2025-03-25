@@ -12,6 +12,7 @@
 @for (.artists) |artist| {
   <tr>
   <td class=cell><a href="/artists/{{artist.url}}">{{artist.name}}</a></td>
+  <td class=cell>{{artist.scrobbles}}</td>
   </tr>
 }
 </table>
