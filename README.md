@@ -20,11 +20,11 @@ Licensed under MIT.
         - [x] Include number of plays for each
     - [x] See all albums under "/albums"
         - [x] See all songs from album
-        - [ ] Include number of plays
+        - [x] Include number of plays
     - [x] See all songs under "/songs"
         - [ ] Include respective artist(s)
         - [ ] Include respective album[^10]
-        - [ ] Inclue number of plays
+        - [x] Include number of plays
     - [ ] Create disambiguation pages
         - [ ] Artists
         - [ ] Albums
@@ -78,7 +78,7 @@ Licensed under MIT.
 
 [^10]: Would probably select the album with the most scrobbles
 
-[^11]: I probably don't understand it well enough, but it appears that I should be able to do this using `@cImport` and/or `translate-c` on the original MusicBrainz source, but it's not all clear to me on how that would work yet. This is a necessary step for what I have planned however, so we'll see where it goes.
+[^11]: I probably don't understand it well enough, but it appears that I should be able to do this using `@cImport` and/or `translate-c` on the original MusicBrainz source, but it's not all clear to me on how that would work yet. This is a necessary step for what I have planned however, so we'll see where it goes. **Update 3/25/25:** A Zig implementation for what Zuletzt requires (and *only* what Zuletzt requires) has been (mostly) written.
 
 ## Contributing
 I am a math student who is interested in programming. I will not be writing quality code. That said, Zuletzt is something that, at the moment, I am very excited about making, and using to relearn some things about programming. Unless contributions are given in the form of code review, or some kind of constructive criticism, it's not likely that I accept pull requests. The project is, however, licensed under the MIT License, so feel free to do what you like with it in your own way.
