@@ -7,9 +7,11 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
     const query = jetzig.database.Query(.Song).select(.{}).orderBy(.{ .name = .asc });
     const songs = try request.repo.all(query);
     for (songs) |song| {
+        const scrobbles = try jetzig.database.Query(.Scrobble).where(.{ .song_id = song.id }).count().execute(request.repo);
         var song_view = try songs_view.append(.object);
         try song_view.put("name", song.name);
         try song_view.put("url", song.id);
+        try song_view.put("scrobbles", scrobbles);
     }
     return request.render(.ok);
 }
