@@ -5,12 +5,27 @@ const jetquery = @import("jetzig").jetquery;
 pub fn index(request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
     var albums_view = try root.put("albums", .array);
-    const query = jetzig.database.Query(.Album).select(.{}).orderBy(.{ .name = .asc });
+    const query = jetzig.database.Query(.Album).select(.{})
+        .include(.albumartists, .{ .select = .{.artist_id} })
+        .orderBy(.{ .name = .asc });
     const albums = try request.repo.all(query);
     for (albums) |album| {
+        const scrobbles = try jetzig.database.Query(.Scrobble).where(.{ .album_id = album.id }).count().execute(request.repo);
         var album_view = try albums_view.append(.object);
+
+        var artist_infos = try album_view.put("artist_info", .array);
+        for (album.albumartists) |artist| {
+            var artist_info = try artist_infos.append(.object);
+            const artist_data = try jetzig.database.Query(.Artist).where(.{ .id = artist.artist_id }).all(request.repo);
+            for (artist_data) |ad| {
+                try artist_info.put("name", ad.name);
+                try artist_info.put("id", ad.id);
+            }
+        }
+
         try album_view.put("name", album.name);
         try album_view.put("url", album.id);
+        try album_view.put("scrobbles", scrobbles);
     }
     return request.render(.ok);
 }

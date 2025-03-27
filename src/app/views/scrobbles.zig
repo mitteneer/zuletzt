@@ -25,8 +25,8 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
 
         try scrobble_view.put("song_name", scrobble.song.name);
         try scrobble_view.put("song_id", scrobble.song.id);
-        try scrobble_view.put("artist_name", "placeholder");
-        try scrobble_view.put("artist_id", "placeholder");
+        //try scrobble_view.put("artist_name", "placeholder");
+        //try scrobble_view.put("artist_id", "placeholder");
         try scrobble_view.put("album_name", scrobble.album.name);
         try scrobble_view.put("album_id", scrobble.album.id);
         try scrobble_view.put("date", scrobble.date);
