@@ -4,7 +4,7 @@ const jetzig = @import("jetzig");
 pub fn index(request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
     var scrobbles_view = try root.put("scrobbles", .array);
-    const query = jetzig.database.Query(.Scrobble).select(.{.date})
+    const query = jetzig.database.Query(.Scrobble).select(.{ .id, .date })
         .include(.song, .{ .select = .{ .id, .name } })
         .include(.album, .{ .select = .{ .id, .name } })
         .include(.scrobbleartists, .{ .select = .{.artist_id} })
