@@ -1,7 +1,6 @@
 <html>
 <head>
 <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="styles.css">
 <meta charset="UTF-8">
 </head>
 <body>
