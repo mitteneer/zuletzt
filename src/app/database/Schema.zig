@@ -115,7 +115,7 @@ pub const Scrobble = jetquery.Model(
     struct {
         id: i32,
         song_id: i32,
-        album_id: ?i32,
+        album_id: i32,
         date: jetquery.DateTime,
         created_at: jetquery.DateTime,
         updated_at: jetquery.DateTime,

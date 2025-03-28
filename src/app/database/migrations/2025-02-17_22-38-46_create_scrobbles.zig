@@ -8,7 +8,7 @@ pub fn up(repo: anytype) !void {
         &.{
             t.primaryKey("id", .{}),
             t.column("song_id", .integer, .{}),
-            t.column("album_id", .integer, .{ .optional = true }),
+            t.column("album_id", .integer, .{}),
             t.column("date", .datetime, .{}),
             t.timestamps(.{}),
         },
