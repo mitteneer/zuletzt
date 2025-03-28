@@ -4,18 +4,14 @@ const jetzig = @import("jetzig");
 pub fn index(request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
     var songs_view = try root.put("songs", .array);
-    const query = jetzig.database.Query(.Song)
+    const songs = try jetzig.database.Query(.Song)
         .select(.{ .id, .name })
         .include(.songartists, .{ .select = .{.artist_id} })
         .include(.scrobbles, .{ .select = .{.id} })
-        .orderBy(.{ .name = .asc });
-    const songs = try request.repo.all(query);
+        .orderBy(.{ .name = .asc })
+        .all(request.repo);
 
     for (songs) |song| {
-        //const scrobbles = try jetzig.database.Query(.Scrobble)
-        //    .where(.{ .song_id = song.id })
-        //    .count()
-        //    .execute(request.repo);
         var song_view = try songs_view.append(.object);
 
         var artist_infos = try song_view.put("artist_info", .array);

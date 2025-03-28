@@ -5,16 +5,12 @@ const jetquery = @import("jetzig").jetquery;
 pub fn index(request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
     var artists_view = try root.put("artists", .array);
-    const query = jetzig.database.Query(.Artist)
+    const artists = try jetzig.database.Query(.Artist)
         .select(.{ .id, .name })
         .include(.scrobbleartists, .{ .select = .{.id} })
-        .orderBy(.{ .name = .asc });
-    const artists = try request.repo.all(query);
+        .orderBy(.{ .name = .asc })
+        .all(request.repo);
     for (artists) |artist| {
-        //const scrobbles = try jetzig.database.Query(.Scrobbleartist)
-        //    .where(.{ .artist_id = artist.id })
-        //    .count()
-        //    .execute(request.repo);
         var artist_view = try artists_view.append(.object);
         try artist_view.put("name", artist.name);
         try artist_view.put("url", artist.id);
