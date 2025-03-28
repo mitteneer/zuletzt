@@ -5,7 +5,9 @@ const jetquery = @import("jetzig").jetquery;
 pub fn index(request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
     var artists_view = try root.put("artists", .array);
-    const query = jetzig.database.Query(.Artist).select(.{}).orderBy(.{ .name = .asc });
+    const query = jetzig.database.Query(.Artist)
+        .select(.{ .id, .name })
+        .orderBy(.{ .name = .asc });
     const artists = try request.repo.all(query);
     for (artists) |artist| {
         const scrobbles = try jetzig.database.Query(.Scrobbleartist).where(.{ .artist_id = artist.id }).count().execute(request.repo);
@@ -26,6 +28,7 @@ pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
     try root.put("artist", artist.?.name);
     var albums_view = try root.put("albums", .array);
     const query = jetzig.database.Query(.Albumartist)
+        .select(.{.id})
         .include(.album, .{ .select = .{ .name, .id } })
         .join(.inner, .artist)
         .where(.{ .artist = .{ .id = id } });
