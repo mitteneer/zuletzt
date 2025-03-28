@@ -11,17 +11,21 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
     const songs = try request.repo.all(query);
 
     for (songs) |song| {
-        const scrobbles = try jetzig.database.Query(.Scrobble).where(.{ .song_id = song.id }).count().execute(request.repo);
+        const scrobbles = try jetzig.database.Query(.Scrobble)
+            .where(.{ .song_id = song.id })
+            .count()
+            .execute(request.repo);
         var song_view = try songs_view.append(.object);
 
         var artist_infos = try song_view.put("artist_info", .array);
         for (song.songartists) |artist| {
             var artist_info = try artist_infos.append(.object);
-            const artist_data = try jetzig.database.Query(.Artist).find(artist.artist_id).select(.{ .id, .name }).execute(request.repo);
-            if (artist_data) |ad| {
-                try artist_info.put("name", ad.name);
-                try artist_info.put("id", ad.id);
-            }
+            const artist_data = try jetzig.database.Query(.Artist)
+                .find(artist.artist_id)
+                .select(.{ .id, .name })
+                .execute(request.repo);
+            try artist_info.put("name", artist_data.?.name);
+            try artist_info.put("id", artist_data.?.id);
         }
         try song_view.put("name", song.name);
         try song_view.put("url", song.id);

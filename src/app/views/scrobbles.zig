@@ -4,7 +4,8 @@ const jetzig = @import("jetzig");
 pub fn index(request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
     var scrobbles_view = try root.put("scrobbles", .array);
-    const query = jetzig.database.Query(.Scrobble).select(.{ .id, .date })
+    const query = jetzig.database.Query(.Scrobble)
+        .select(.{ .id, .date })
         .include(.song, .{ .select = .{ .id, .name } })
         .include(.album, .{ .select = .{ .id, .name } })
         .include(.scrobbleartists, .{ .select = .{.artist_id} })
@@ -16,17 +17,16 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
         var artist_infos = try scrobble_view.put("artist_info", .array);
         for (scrobble.scrobbleartists) |artist| {
             var artist_info = try artist_infos.append(.object);
-            const artist_data = try jetzig.database.Query(.Artist).where(.{ .id = artist.artist_id }).all(request.repo);
-            for (artist_data) |ad| {
-                try artist_info.put("name", ad.name);
-                try artist_info.put("id", ad.id);
-            }
+            const artist_data = try jetzig.database.Query(.Artist)
+                .find(artist.artist_id)
+                .select(.{ .id, .name })
+                .execute(request.repo);
+            try artist_info.put("name", artist_data.?.name);
+            try artist_info.put("id", artist_data.?.id);
         }
 
         try scrobble_view.put("song_name", scrobble.song.name);
         try scrobble_view.put("song_id", scrobble.song.id);
-        //try scrobble_view.put("artist_name", "placeholder");
-        //try scrobble_view.put("artist_id", "placeholder");
         try scrobble_view.put("album_name", scrobble.album.name);
         try scrobble_view.put("album_id", scrobble.album.id);
         try scrobble_view.put("date", scrobble.date);

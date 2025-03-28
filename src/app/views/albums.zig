@@ -12,17 +12,21 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
     const albums = try request.repo.all(query);
 
     for (albums) |album| {
-        const scrobbles = try jetzig.database.Query(.Scrobble).where(.{ .album_id = album.id }).count().execute(request.repo);
+        const scrobbles = try jetzig.database.Query(.Scrobble)
+            .where(.{ .album_id = album.id })
+            .count()
+            .execute(request.repo);
         var album_view = try albums_view.append(.object);
 
         var artist_infos = try album_view.put("artist_info", .array);
         for (album.albumartists) |artist| {
             var artist_info = try artist_infos.append(.object);
-            const artist_data = try jetzig.database.Query(.Artist).find(artist.artist_id).select(.{ .id, .name }).execute(request.repo);
-            if (artist_data) |ad| {
-                try artist_info.put("name", ad.name);
-                try artist_info.put("id", ad.id);
-            }
+            const artist_data = try jetzig.database.Query(.Artist)
+                .find(artist.artist_id)
+                .select(.{ .id, .name })
+                .execute(request.repo);
+            try artist_info.put("name", artist_data.?.name);
+            try artist_info.put("id", artist_data.?.id);
         }
 
         try album_view.put("name", album.name);
@@ -33,7 +37,10 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
 }
 
 pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
-    const album = try jetzig.database.Query(.Album).find(id).execute(request.repo);
+    const album = try jetzig.database.Query(.Album)
+        .find(id)
+        .select(.{ .id, .name })
+        .execute(request.repo);
     var root = try request.data(.object);
     try root.put("album", album.?.name);
     var songs_view = try root.put("songs", .array);
@@ -42,9 +49,13 @@ pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
         .include(.song, .{ .select = .{ .name, .id } })
         .join(.inner, .album)
         .where(.{ .album = .{ .id = id } });
+
     const songs = try request.repo.all(query);
     for (songs) |song| {
-        const scrobbles = try jetzig.database.Query(.Scrobble).where(.{ .song_id = song.song.id }).count().execute(request.repo);
+        const scrobbles = try jetzig.database.Query(.Scrobble)
+            .where(.{ .song_id = song.song.id })
+            .count()
+            .execute(request.repo);
         var song_view = try songs_view.append(.object);
         try song_view.put("name", song.song.name);
         try song_view.put("url", song.song.id);
