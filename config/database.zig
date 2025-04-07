@@ -15,7 +15,7 @@ pub const database = .{
         .port = 5432,
         .username = "postgres",
         .password = "postgres",
-        .database = "zuletzt_dev",
+        .database = "zuletzt_rsql",
         .pool_size = 16,
     },
 

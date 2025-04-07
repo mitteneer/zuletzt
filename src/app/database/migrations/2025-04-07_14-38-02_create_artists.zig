@@ -8,7 +8,7 @@ pub fn up(repo: anytype) !void {
         &.{
             t.primaryKey("id", .{}),
             t.column("name", .string, .{}),
-            t.column("descriptive_string", .string, .{}),
+            t.column("disambiguation", .string, .{ .optional = true }),
             t.timestamps(.{}),
         },
         .{},
