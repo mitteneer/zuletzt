@@ -33,12 +33,12 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
     const Album = struct { name: []const u8, id: i32, artist_name: []const u8, artist_id: i32, scrobbles: i64 };
 
     var prev_album_id: ?i32 = null;
-    var prev_artist_infos = try root.put("test", .array);
+    var prev_artist_infos: ?*jetzig.zmpl.Data.Value = null;
 
     blk: while (try albums_jq_result.postgresql.result.next()) |album_row| {
         const album = try album_row.to(Album, .{ .dupe = true, .allocator = request.allocator });
         if (album.id == prev_album_id) {
-            var artist_info = try prev_artist_infos.append(.object);
+            var artist_info = try prev_artist_infos.?.append(.object);
             try artist_info.put("name", album.artist_name);
             try artist_info.put("url", album.artist_id);
             continue :blk;
