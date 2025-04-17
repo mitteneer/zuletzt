@@ -4,30 +4,52 @@ const jetzig = @import("jetzig");
 pub fn index(request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
     var songs_view = try root.put("songs", .array);
-    const songs = try jetzig.database.Query(.Song)
-        .select(.{ .id, .name })
-        .include(.songartists, .{ .select = .{.artist_id} })
-        .include(.scrobbles, .{ .select = .{.id} })
-        .orderBy(.{ .name = .asc })
-        .all(request.repo);
+    //const songs = try jetzig.database.Query(.Song)
+    //    .select(.{ .id, .name })
+    //    .include(.songartists, .{ .select = .{.artist_id} })
+    //    .include(.scrobbles, .{ .select = .{.id} })
+    //    .orderBy(.{ .name = .asc })
+    //    .all(request.repo);
 
-    for (songs) |song| {
+    const query =
+        \\SELECT songs.name, songs.id, COUNT(scrobbles) AS scrobbles
+        \\FROM albumsongs
+        \\INNER JOIN songs ON albumsongs.song_id = songs.id
+        \\INNER JOIN scrobbles ON scrobbles.albumsong = albumsongs.id
+        \\GROUP BY songs.id
+        \\ORDER BY scrobbles DESC
+    ;
+
+    var songs_js_result = try request.repo.executeSql(query, .{});
+    defer songs_js_result.deinit();
+
+    const Song = struct { name: []const u8, id: i32, scrobbles: i64 };
+
+    while (try songs_js_result.postgresql.result.next()) |song_row| {
+        const song = try song_row.to(Song, .{ .dupe = true, .allocator = request.allocator });
         var song_view = try songs_view.append(.object);
-
-        var artist_infos = try song_view.put("artist_info", .array);
-        for (song.songartists) |artist| {
-            var artist_info = try artist_infos.append(.object);
-            const artist_data = try jetzig.database.Query(.Artist)
-                .find(artist.artist_id)
-                .select(.{ .id, .name })
-                .execute(request.repo);
-            try artist_info.put("name", artist_data.?.name);
-            try artist_info.put("id", artist_data.?.id);
-        }
         try song_view.put("name", song.name);
         try song_view.put("url", song.id);
-        try song_view.put("scrobbles", (song.scrobbles).len);
+        try song_view.put("scrobbles", song.scrobbles);
     }
+
+    //for (songs) |song| {
+    //    var song_view = try songs_view.append(.object);
+
+    //    var artist_infos = try song_view.put("artist_info", .array);
+    //    for (song.songartists) |artist| {
+    //        var artist_info = try artist_infos.append(.object);
+    //        const artist_data = try jetzig.database.Query(.Artist)
+    //            .find(artist.artist_id)
+    //            .select(.{ .id, .name })
+    //            .execute(request.repo);
+    //        try artist_info.put("name", artist_data.?.name);
+    //        try artist_info.put("id", artist_data.?.id);
+    //    }
+    //    try song_view.put("name", song.name);
+    //    try song_view.put("url", song.id);
+    //    try song_view.put("scrobbles", (song.scrobbles).len);
+    //}
     return request.render(.ok);
 }
 
