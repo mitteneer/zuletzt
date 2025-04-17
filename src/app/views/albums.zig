@@ -14,41 +14,52 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
     ////const albums = try request.repo.all(query);
 
     const query =
-        \\SELECT albums.name, albums.id, COUNT(scrobbles) AS scrobbles
+        \\SELECT albums.name, albums.id, artists.name, artists.id, COUNT(scrobbles) AS scrobbles
         \\FROM albumsongs
         \\INNER JOIN albums ON albumsongs.album_id = albums.id
         \\INNER JOIN scrobbles ON albumsongs.id = scrobbles.albumsong
-        \\GROUP BY albums.id
+        \\INNER JOIN artistalbums ON artistalbums.album_id = albums.id
+        \\INNER JOIN artists ON artists.id = artistalbums.artist_id
+        \\GROUP BY albums.id, artists.id
         \\ORDER BY scrobbles DESC
     ;
 
-    var inter_conn = try request.repo.connect();
-    defer inter_conn.release();
+    //var inter_conn = try request.repo.connect();
+    //defer inter_conn.release();
 
-    var albums_jq_result = try inter_conn.executeSql(query, .{}, null, request.repo);
+    var albums_jq_result = try request.repo.executeSql(query, .{});
     defer albums_jq_result.deinit();
 
-    const Album = struct { name: []const u8, id: i32, scrobbles: i64 };
+    const Album = struct { name: []const u8, id: i32, artist_name: []const u8, artist_id: i32, scrobbles: i64 };
 
-    while (try albums_jq_result.postgresql.result.next()) |album_row| {
+    var prev_album_id: ?i32 = null;
+    var prev_artist_infos = try root.put("test", .array);
+
+    blk: while (try albums_jq_result.postgresql.result.next()) |album_row| {
         const album = try album_row.to(Album, .{ .dupe = true, .allocator = request.allocator });
+        if (album.id == prev_album_id) {
+            var artist_info = try prev_artist_infos.append(.object);
+            try artist_info.put("name", album.artist_name);
+            try artist_info.put("url", album.artist_id);
+            continue :blk;
+        }
         var album_view = try albums_view.append(.object);
         var artist_infos = try album_view.put("artist_info", .array);
-        const artist_data = try jetzig.database.Query(.Artistalbum)
-            .select(.{.id})
-            .where(.{ .album_id = album.id })
-            .include(.artist, .{ .select = .{ .name, .id } })
-            .all(request.repo);
+        //const artist_data = try jetzig.database.Query(.Artistalbum)
+        //    .select(.{.id})
+        //    .where(.{ .album_id = album.id })
+        //    .include(.artist, .{ .select = .{ .name, .id } })
+        //    .all(request.repo);
 
-        for (artist_data) |artist| {
-            var artist_info = try artist_infos.append(.object);
-            try artist_info.put("name", artist.artist.name);
-            try artist_info.put("url", artist.artist.id);
-        }
+        var artist_info = try artist_infos.append(.object);
+        try artist_info.put("name", album.artist_name);
+        try artist_info.put("url", album.artist_id);
 
         try album_view.put("name", album.name);
         try album_view.put("url", album.id);
         try album_view.put("scrobbles", album.scrobbles);
+        prev_artist_infos = artist_infos;
+        prev_album_id = album.id;
     }
     return request.render(.ok);
 }
