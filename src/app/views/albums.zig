@@ -22,7 +22,10 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
         \\ORDER BY scrobbles DESC
     ;
 
-    var albums_jq_result = try request.repo.executeSql(query, .{});
+    var inter_conn = try request.repo.connect();
+    defer inter_conn.release();
+
+    var albums_jq_result = try inter_conn.executeSql(query, .{}, null, request.repo);
     defer albums_jq_result.deinit();
 
     const Album = struct { name: []const u8, id: i32, scrobbles: i64 };
@@ -30,6 +33,19 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
     while (try albums_jq_result.postgresql.result.next()) |album_row| {
         const album = try album_row.to(Album, .{ .dupe = true, .allocator = request.allocator });
         var album_view = try albums_view.append(.object);
+        var artist_infos = try album_view.put("artist_info", .array);
+        const artist_data = try jetzig.database.Query(.Artistalbum)
+            .select(.{.id})
+            .where(.{ .album_id = album.id })
+            .include(.artist, .{ .select = .{ .name, .id } })
+            .all(request.repo);
+
+        for (artist_data) |artist| {
+            var artist_info = try artist_infos.append(.object);
+            try artist_info.put("name", artist.artist.name);
+            try artist_info.put("url", artist.artist.id);
+        }
+
         try album_view.put("name", album.name);
         try album_view.put("url", album.id);
         try album_view.put("scrobbles", album.scrobbles);
