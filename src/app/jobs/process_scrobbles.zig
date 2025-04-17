@@ -64,29 +64,31 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             //var album_id: i32 = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(formed)));
             //const song_id = (song_hash ^ artist_hash ^ album_hash);
 
-            var albumsong_id = try jetzig.database.Query(.Albumsong).findBy(.{ .album_id = album_id, .song_id = song_id }).select(.{.id}).execute(env.repo);
-            var ins_album_id = try jetzig.database.Query(.Album).find(album_id).select(.{.id}).execute(env.repo);
+            var albumsong = try jetzig.database.Query(.Albumsong).findBy(.{ .album_id = album_id, .song_id = song_id }).select(.{.id}).execute(env.repo);
+            var ins_album = try jetzig.database.Query(.Album).find(album_id).select(.{.id}).execute(env.repo);
 
-            var ins_artist_id = try jetzig.database.Query(.Artist).find(artist_id).select(.{.id}).execute(env.repo);
-            if (ins_artist_id == null) ins_artist_id = try jetzig.database.Query(.Artist).insert(.{ .id = artist_id, .name = scrobble.artist, .disambiguation = null }).returning(.{.id}).execute(env.repo);
+            var ins_artist = try jetzig.database.Query(.Artist).find(artist_id).select(.{.id}).execute(env.repo);
+            if (ins_artist == null) ins_artist = try jetzig.database.Query(.Artist).insert(.{ .id = artist_id, .name = scrobble.artist, .disambiguation = null }).returning(.{.id}).execute(env.repo);
 
-            if (albumsong_id == null) {
-                const ins_song_id: []const u8 =
-                    jetzig.database.Query(.Song).insert(.{ .id = song_id, .name = scrobble.track, .length = null, .hidden = false }).returning(.{.id}).execute(env.repo) catch
-                        jetzig.database.Query(.Song).find(song_id).select(.{.id}).execute(env.repo);
+            if (albumsong == null) {
+                var ins_song = try jetzig.database.Query(.Song).find(song_id).select(.{.id}).execute(env.repo);
+                if (ins_song == null) ins_song = try jetzig.database.Query(.Song).insert(.{ .id = song_id, .name = scrobble.track, .length = null, .hidden = false }).returning(.{.id}).execute(env.repo);
 
-                if (ins_album_id == null) ins_album_id = try jetzig.database.Query(.Album).insert(.{ .id = album_id, .name = scrobble.album, .length = null }).returning(.{.id}).execute(env.repo);
+                if (ins_album == null) {
+                    ins_album = try jetzig.database.Query(.Album).insert(.{ .id = album_id, .name = scrobble.album, .length = null }).returning(.{.id}).execute(env.repo);
+                    // I think there's still technically a bug here when you have a different artist but I'm not sure
+                    try jetzig.database.Query(.Artistalbum).insert(.{ .artist_id = ins_artist.?.id, .album_id = ins_album.?.id }).execute(env.repo);
+                }
 
-                albumsong_id = try jetzig.database.Query(.Albumsong).insert(.{ .song_id = ins_song_id, .album_id = ins_album_id }).execute(env.repo);
+                albumsong = try jetzig.database.Query(.Albumsong).insert(.{ .song_id = ins_song.?.id, .album_id = ins_album.?.id }).returning(.{.id}).execute(env.repo);
 
-                try jetzig.database.Query(.Albumsongartist).insert(.{ .albumsong_id = albumsong_id, .artist_id = ins_artist_id });
-                try jetzig.database.Query(.Artistalbum).insert(.{ .artist_id = ins_artist_id, .album_id = ins_album_id });
+                try jetzig.database.Query(.Albumsongsartist).insert(.{ .albumsong_id = albumsong.?.id, .artist_id = ins_artist.?.id }).execute(env.repo);
             } else {
-                const ins_albumsongartist = try jetzig.database.Query(.Albumsongartist).findBy(.{ .albumsong_id = albumsong_id, .artist_id = ins_artist_id }).select(.{.id}).execute(env.repo);
-                if (ins_albumsongartist == null) try jetzig.database.Query(.Albumsongartist).insert(.{ .albumsong_id = albumsong_id, .artist_id = ins_artist_id }).execute(env.repo);
+                const ins_albumsongartist = try jetzig.database.Query(.Albumsongsartist).findBy(.{ .albumsong_id = albumsong.?.id, .artist_id = ins_artist.?.id }).select(.{.id}).execute(env.repo);
+                if (ins_albumsongartist == null) try jetzig.database.Query(.Albumsongsartist).insert(.{ .albumsong_id = albumsong.?.id, .artist_id = ins_artist.?.id }).execute(env.repo);
 
-                const ins_artistalbum = try jetzig.database.Query(.Artistalbum).findBy(.{ .albumsong_id = albumsong_id, .artist_id = ins_artist_id }).select(.{.id}).execute(env.repo);
-                if (ins_artistalbum == null) try jetzig.database.Query(.Artistalbum).insert(.{ .albumsong_id = albumsong_id, .artist_id = ins_artist_id }).execute(env.repo);
+                const ins_artistalbum = try jetzig.database.Query(.Artistalbum).findBy(.{ .album_id = ins_album.?.id, .artist_id = ins_artist.?.id }).select(.{.id}).execute(env.repo);
+                if (ins_artistalbum == null) try jetzig.database.Query(.Artistalbum).insert(.{ .album_id = ins_album.?.id, .artist_id = ins_artist.?.id }).execute(env.repo);
             }
 
             //if (ins_artist_id == null) {
@@ -95,7 +97,7 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
             //    try jetzig.database.Query(.Artistalbum).insert(.{ .artist_id = ins_artist_id, .album_id = ins_album_id });
             //}
 
-            try jetzig.database.Query(.Scrobble).insert(.{ .albumsong_id = albumsong_id, .date = scrobble.date }).execute(env.repo);
+            try jetzig.database.Query(.Scrobble).insert(.{ .albumsong = albumsong.?.id, .datetime = scrobble.date }).execute(env.repo);
         }
     }
 
