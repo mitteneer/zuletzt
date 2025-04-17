@@ -12,27 +12,68 @@ pub const Album = jetquery.Model(
     },
     .{
         .relations = .{
-            .masteralbum = jetquery.belongsTo(.Masteralbum, .{}),
-            .scrobbles = jetquery.hasMany(.Scrobble, .{}),
-            .ratings = jetquery.hasMany(.Rating, .{}),
-            .aliases = jetquery.hasMany(.Alias, .{}),
             .albumsongs = jetquery.hasMany(.Albumsong, .{}),
-            .albumartists = jetquery.hasMany(.Albumartist, .{}),
+            .artistalbums = jetquery.hasMany(.Artistalbum, .{}),
         },
     },
 );
 
-pub const Alias = jetquery.Model(
+pub const Albumsong = jetquery.Model(
     @This(),
-    "aliases",
+    "albumsongs",
     struct {
         id: i32,
-        reference_id: i32,
-        alias: []const u8,
+        song_id: i32,
+        album_id: i32,
         created_at: jetquery.DateTime,
         updated_at: jetquery.DateTime,
     },
-    .{},
+    .{
+        .relations = .{
+            .song = jetquery.belongsTo(.Song, .{}),
+            .album = jetquery.belongsTo(.Album, .{}),
+            .scrobbles = jetquery.hasMany(.Scrobble, .{
+                .foreign_key = "albumsong",
+            }),
+            .albumsongsartists = jetquery.hasMany(.Albumsongsartist, .{}),
+        },
+    },
+);
+
+pub const Albumsongsartist = jetquery.Model(
+    @This(),
+    "albumsongsartists",
+    struct {
+        id: i32,
+        albumsong_id: i32,
+        artist_id: i32,
+        created_at: jetquery.DateTime,
+        updated_at: jetquery.DateTime,
+    },
+    .{
+        .relations = .{
+            .albumsong = jetquery.belongsTo(.Albumsong, .{}),
+            .artist = jetquery.belongsTo(.Artist, .{}),
+        },
+    },
+);
+
+pub const Artistalbum = jetquery.Model(
+    @This(),
+    "artistalbums",
+    struct {
+        id: i32,
+        album_id: i32,
+        artist_id: i32,
+        created_at: jetquery.DateTime,
+        updated_at: jetquery.DateTime,
+    },
+    .{
+        .relations = .{
+            .album = jetquery.belongsTo(.Album, .{}),
+            .artist = jetquery.belongsTo(.Artist, .{}),
+        },
+    },
 );
 
 pub const Artist = jetquery.Model(
@@ -41,70 +82,14 @@ pub const Artist = jetquery.Model(
     struct {
         id: i32,
         name: []const u8,
-        descriptive_string: []const u8,
+        disambiguation: ?[]const u8,
         created_at: jetquery.DateTime,
         updated_at: jetquery.DateTime,
     },
     .{
         .relations = .{
-            .scrobbleartists = jetquery.hasMany(.Scrobbleartist, .{}),
-            .aliases = jetquery.hasMany(.Alias, .{}),
-            .artistsongs = jetquery.hasMany(.Songartist, .{}),
-            .mastersongs = jetquery.hasMany(.Mastersong, .{}),
-            .artistalbums = jetquery.hasMany(.Albumartist, .{}),
-            .masteralbums = jetquery.hasMany(.Masteralbum, .{}),
-        },
-    },
-);
-
-pub const Masteralbum = jetquery.Model(
-    @This(),
-    "masteralbums",
-    struct {
-        id: i32,
-        name: []const u8,
-        created_at: jetquery.DateTime,
-        updated_at: jetquery.DateTime,
-    },
-    .{
-        .relations = .{
-            .albums = jetquery.hasMany(.Album, .{}),
-        },
-    },
-);
-
-pub const Mastersong = jetquery.Model(
-    @This(),
-    "mastersongs",
-    struct {
-        id: i32,
-        name: []const u8,
-        created_at: jetquery.DateTime,
-        updated_at: jetquery.DateTime,
-    },
-    .{
-        .relations = .{
-            .songs = jetquery.hasMany(.Song, .{}),
-        },
-    },
-);
-
-pub const Rating = jetquery.Model(
-    @This(),
-    "ratings",
-    struct {
-        id: i32,
-        reference_id: i32,
-        score: f32,
-        date: jetquery.DateTime,
-        created_at: jetquery.DateTime,
-        updated_at: jetquery.DateTime,
-    },
-    .{
-        .relations = .{
-            .song = jetquery.belongsTo(.Song, .{}),
-            .album = jetquery.belongsTo(.Album, .{}),
-            .artist = jetquery.belongsTo(.Artist, .{}),
+            .albumsongsartists = jetquery.hasMany(.Albumsongsartist, .{}),
+            .artistalbums = jetquery.hasMany(.Artistalbum, .{}),
         },
     },
 );
@@ -114,17 +99,16 @@ pub const Scrobble = jetquery.Model(
     "scrobbles",
     struct {
         id: i32,
-        song_id: i32,
-        album_id: i32,
-        date: jetquery.DateTime,
+        albumsong: i32,
+        datetime: jetquery.DateTime,
         created_at: jetquery.DateTime,
         updated_at: jetquery.DateTime,
     },
     .{
         .relations = .{
-            .song = jetquery.belongsTo(.Song, .{}),
-            .album = jetquery.belongsTo(.Album, .{}),
-            .scrobbleartists = jetquery.hasMany(.Scrobbleartist, .{}),
+            .albumsong = jetquery.belongsTo(.Albumsong, .{
+                .foreign_key = "albumsong",
+            }),
         },
     },
 );
@@ -142,84 +126,7 @@ pub const Song = jetquery.Model(
     },
     .{
         .relations = .{
-            .mastersong = jetquery.belongsTo(.Mastersong, .{}),
-            .scrobbles = jetquery.hasMany(.Scrobble, .{}),
-            .ratings = jetquery.hasMany(.Rating, .{}),
-            .aliases = jetquery.hasMany(.Alias, .{}),
-            .songartists = jetquery.hasMany(.Songartist, .{}),
             .albumsongs = jetquery.hasMany(.Albumsong, .{}),
-        },
-    },
-);
-
-pub const Albumartist = jetquery.Model(
-    @This(),
-    "Albumartists",
-    struct {
-        id: i32,
-        album_id: i32,
-        artist_id: i32,
-        created_at: jetquery.DateTime,
-        updated_at: jetquery.DateTime,
-    },
-    .{
-        .relations = .{
-            .album = jetquery.belongsTo(.Album, .{}),
-            .artist = jetquery.belongsTo(.Artist, .{}),
-        },
-    },
-);
-
-pub const Songartist = jetquery.Model(
-    @This(),
-    "Songartists",
-    struct {
-        id: i32,
-        song_id: i32,
-        artist_id: i32,
-        created_at: jetquery.DateTime,
-        updated_at: jetquery.DateTime,
-    },
-    .{
-        .relations = .{
-            .song = jetquery.belongsTo(.Song, .{}),
-            .artist = jetquery.belongsTo(.Artist, .{}),
-        },
-    },
-);
-
-pub const Albumsong = jetquery.Model(
-    @This(),
-    "Albumsongs",
-    struct {
-        id: i32,
-        album_id: i32,
-        song_id: i32,
-        created_at: jetquery.DateTime,
-        updated_at: jetquery.DateTime,
-    },
-    .{
-        .relations = .{
-            .album = jetquery.belongsTo(.Album, .{}),
-            .song = jetquery.belongsTo(.Song, .{}),
-        },
-    },
-);
-
-pub const Scrobbleartist = jetquery.Model(
-    @This(),
-    "Scrobbleartists",
-    struct {
-        id: i32,
-        scrobble_id: i32,
-        artist_id: i32,
-        created_at: jetquery.DateTime,
-        updated_at: jetquery.DateTime,
-    },
-    .{
-        .relations = .{
-            .scrobble = jetquery.belongsTo(.Scrobble, .{}),
-            .artist = jetquery.belongsTo(.Artist, .{}),
         },
     },
 );
