@@ -10,7 +10,6 @@
 <thead>
 <tr>
 <th>Song</th>
-<th>Artist(s)</th>
 <th>Album</th>
 <th>Date</th>
 </tr>
@@ -19,11 +18,6 @@
 @for (.scrobbles) |scrobble| {
   <tr>
   <td class=cell><a href="/songs/{{scrobble.song_id}}">{{scrobble.song_name}}</a></td>
-  <td class=cell>
-  @for (scrobble.get("artist_info").?) |ai| {
-    <a href="/artists/{{ai.id}}">{{ai.name}}</a>
-  }
-  </td>
   <td class=cell><a href="/albums/{{scrobble.album_id}}">{{scrobble.album_name}}</a></td>
   <td class=cell>{{scrobble.date}}</td>
   </tr>
