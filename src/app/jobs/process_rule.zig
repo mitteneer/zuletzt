@@ -2,31 +2,54 @@ const std = @import("std");
 const jetzig = @import("jetzig");
 
 pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig.jobs.JobEnv) !void {
-    _ = allocator;
     _ = env;
     //_ = params;
 
-    const rule = try params.toJson();
+    const Rule = struct {
+        name: []const u8,
+        conditionals: []struct {
+            match_on: []const u8,
+            match_cond: []const u8,
+            match_txt: []const u8,
+        },
+        actions: []struct {
+            action: []const u8,
+            action_on: []const u8,
+            action_txt: []const u8,
+        },
+    };
 
-    //const rule = struct {
-    //    name: []const u8 = params,
-    //    conditions: []struct {
-    //        match_on: []const u8,
-    //        match_cond: []const u8,
-    //        match_text: []const u8,
-    //    },
-    //    actions: []struct {
-    //        action: []const u8,
-    //        action_cond: []const u8,
-    //        action_text: []const u8,
-    //    },
-    //};
+    const Rules = struct {
+        rules: []Rule,
+    };
 
-    //var file = try std.fs.cwd().openFile("rules.json", .{});
+    const rule = try std.json.parseFromSliceLeaky(Rule, allocator, try params.toJson(), .{ .ignore_unknown_fields = true });
 
-    //_ = try file.write(rule);
-    try std.fs.cwd().writeFile(.{ "rules.json", rule, .{} });
+    const file_read: std.fs.File = std.fs.cwd().openFile("rules.json", .{}) catch |read_err| switch (read_err) {
+        error.FileNotFound => std.fs.cwd().createFile("rules.json", .{ .read = true, .exclusive = true }) catch |write_err| switch (write_err) {
+            error.PathAlreadyExists => unreachable,
+            else => {
+                std.log.debug("{any} while writing file", .{write_err});
+                return;
+            },
+        },
+        else => {
+            std.log.debug("{any} while reading file", .{read_err});
+            return;
+        },
+    };
 
-    // Job execution code goes here. Add any code that you would like to run in the background.
-    //try env.logger.INFO("Running a job.", .{});
+    var rules = std.ArrayList(Rule).init(allocator);
+    const file_content = try file_read.readToEndAlloc(allocator, 16_000_000);
+    if (file_content.len != 0) {
+        const content: Rules = try std.json.parseFromSliceLeaky(Rules, allocator, file_content, .{});
+        try rules.appendSlice(content.rules);
+    }
+    try rules.append(rule);
+    file_read.close();
+
+    const file_write: std.fs.File = try std.fs.cwd().openFile("rules.json", .{ .mode = .write_only });
+    const out_rules = Rules{ .rules = rules.items };
+    const out = try std.json.stringifyAlloc(allocator, out_rules, .{});
+    try file_write.writeAll(out);
 }

@@ -7,3 +7,4 @@ src/app/database/data.db-journal
 src/app/database/old_migrations/
 src/lib
 src/app/scripts/
+rules.json
