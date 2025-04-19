@@ -20,6 +20,26 @@ pub fn edit(id: []const u8, request: *jetzig.Request) !jetzig.View {
 }
 
 pub fn post(request: *jetzig.Request) !jetzig.View {
+    const params = try request.params();
+
+    var job = try request.job("process_rule");
+
+    _ = try job.params.put("name", params.get("rule-title"));
+
+    var conditionals = try job.params.put("conditionals", .array);
+    var cond0 = try conditionals.append(.object);
+    try cond0.put("match_on", params.get("match-on"));
+    try cond0.put("match_cond", params.get("match-cond"));
+    try cond0.put("match_txt", params.get("match-txt"));
+
+    var actions = try job.params.put("actions", .array);
+    var act0 = try actions.append(.object);
+    try act0.put("action", params.get("action"));
+    try act0.put("action_on", params.get("action-on"));
+    try act0.put("action_txt", params.get("action-txt"));
+
+    try job.schedule();
+
     return request.render(.created);
 }
 
@@ -37,7 +57,6 @@ pub fn delete(id: []const u8, request: *jetzig.Request) !jetzig.View {
     _ = id;
     return request.render(.ok);
 }
-
 
 test "index" {
     var app = try jetzig.testing.app(std.testing.allocator, @import("routes"));
