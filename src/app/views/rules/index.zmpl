@@ -21,7 +21,7 @@ If
 <select name="match-cond" id="match-cond">
 <option value="is">is</option>
 <option value="contains">contains</option>
-<option value"matches">matches regex</option>
+<option value="matches">matches regex</option>
 </select>
 <input type="text" name="match-txt" id="match-txt">
 <button type="button" onclick="condAdd()">

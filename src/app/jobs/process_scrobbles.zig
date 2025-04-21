@@ -3,6 +3,9 @@ const jetzig = @import("jetzig");
 const jetquery = @import("jetzig").jetquery;
 const Scrobble = @import("../../types.zig").LastFMScrobble;
 const lastfm = @import("../../types.zig").LastFM;
+//const Rules = @import("../../types.zig").Rules;
+const Data = @import("../../types.zig");
+const rules = @import("../../apply_rule.zig");
 
 // The `run` function for a job is invoked every time the job is processed by a queue worker
 // (or by the Jetzig server if the job is processed in-line).
@@ -18,14 +21,14 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
     const file = try std.fs.cwd().openFile("rules.json", .{ .mode = .read_only });
     const file_content = try file.readToEndAlloc(allocator, 16_000_000);
 
-    const rules = try std.json.parseFromSliceLeaky(Rules, allocator, file_content, .{});
+    const rule_list = try std.json.parseFromSliceLeaky(Data.Rules, allocator, file_content, .{});
 
     if (params.getT(.array, "scrobbles")) |scrobbles| {
         for (scrobbles.items()) |item| {
             //const fixed_date: u32 = @as(u32, item.getT(.integer, "date").?);
-            const scrobble: Scrobble = .{ .track = item.getT(.string, "track").?, .artist = item.getT(.string, "artist").?, .album = item.getT(.string, "album") orelse "", .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").? * 1000)))) };
+            const pre_scrobble: Scrobble = .{ .track = item.getT(.string, "track").?, .artist = item.getT(.string, "artist").?, .album = item.getT(.string, "album") orelse "", .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").? * 1000)))) };
 
-            for (rules) |rule| {}
+            const scrobble = rules.applyScrobbleRule(pre_scrobble, rule_list);
 
             // Make hashes
             //const album_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.album)));

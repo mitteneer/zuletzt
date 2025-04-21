@@ -38,23 +38,23 @@ pub const SpotifyScrobble = struct {
 const Rule = struct {
     name: []const u8,
     conditionals: []struct {
-        match_on: MatchOn,
+        match_on: ScrobbleFields,
         match_cond: enum { is, contains },
         match_txt: []const u8,
     },
     actions: []struct {
-        action: []const u8,
-        action_on: enum { is, contains },
+        action: enum { replace, add },
+        action_on: ScrobbleFields,
         action_txt: []const u8,
     },
 };
 
-const Rules = struct {
+pub const Rules = struct {
     rules: []const Rule,
 };
 
-const MatchOn = enum {
+pub const ScrobbleFields = enum {
     artist,
     album,
-    song,
+    track,
 };
