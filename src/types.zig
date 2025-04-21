@@ -1,5 +1,3 @@
-const zeit = @import("zeit");
-
 pub const LastFMScrobble = struct {
     track: []const u8,
     artist: []const u8,
@@ -35,4 +33,28 @@ pub const SpotifyScrobble = struct {
     offline: bool,
     offline_timestamp: u64,
     incognito_mode: ?bool,
+};
+
+const Rule = struct {
+    name: []const u8,
+    conditionals: []struct {
+        match_on: MatchOn,
+        match_cond: enum { is, contains },
+        match_txt: []const u8,
+    },
+    actions: []struct {
+        action: []const u8,
+        action_on: enum { is, contains },
+        action_txt: []const u8,
+    },
+};
+
+const Rules = struct {
+    rules: []const Rule,
+};
+
+const MatchOn = enum {
+    artist,
+    album,
+    song,
 };

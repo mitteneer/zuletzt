@@ -14,13 +14,18 @@ const lastfm = @import("../../types.zig").LastFM;
 //              - logger:      Logger attached to the same stream as the Jetzig server.
 //              - environment: Enum of `{ production, development }`.
 pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig.jobs.JobEnv) !void {
-    _ = allocator;
     //_ = env;
+    const file = try std.fs.cwd().openFile("rules.json", .{ .mode = .read_only });
+    const file_content = try file.readToEndAlloc(allocator, 16_000_000);
+
+    const rules = try std.json.parseFromSliceLeaky(Rules, allocator, file_content, .{});
 
     if (params.getT(.array, "scrobbles")) |scrobbles| {
         for (scrobbles.items()) |item| {
             //const fixed_date: u32 = @as(u32, item.getT(.integer, "date").?);
             const scrobble: Scrobble = .{ .track = item.getT(.string, "track").?, .artist = item.getT(.string, "artist").?, .album = item.getT(.string, "album") orelse "", .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").? * 1000)))) };
+
+            for (rules) |rule| {}
 
             // Make hashes
             //const album_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.album)));
