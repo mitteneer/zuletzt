@@ -3,6 +3,8 @@ const jetzig = @import("jetzig");
 const jetquery = @import("jetzig").jetquery;
 const ScrobbleTypes = @import("../../types.zig");
 const zeit = @import("zeit");
+const rules = @import("../../apply_rule.zig");
+const Data = @import("../../types.zig");
 
 pub fn index(request: *jetzig.Request, data: *jetzig.Data) !jetzig.View {
     _ = data;
@@ -31,6 +33,11 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
         var skipped_tracks: u64 = 0;
         var limited_tracks: u64 = 0;
 
+        const rule_file = try std.fs.cwd().openFile("rules.json", .{ .mode = .read_only });
+        defer rule_file.close();
+        const file_content = try rule_file.readToEndAlloc(request.allocator, 16_000_000);
+        const rule_list = try std.json.parseFromSliceLeaky(Data.Rules, request.allocator, file_content, .{});
+
         // The only difference between a LastFM scrobble and a Spotify scrobble is the format.
         // I've made a branches for each, because doing it all in one made the readability terrible,
         // and formatting the date in particular was challenging. I could probably pull out the
@@ -46,12 +53,14 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
                     if ((before_limiter or after_limiter) and (scrobble.date > before_limiting_date or scrobble.date < after_limiting_date)) continue :appends;
                     var value = try scrobbles_data.append(.object);
 
+                    const formatted_scrobble = rules.applyScrobbleRule(scrobble, rule_list);
+
                     // This is so unnecessary, probably useful once I start doing Spotify integration though
                     inline for (std.meta.fields(ScrobbleTypes.LastFMScrobble)) |f| {
-                        try value.put(f.name, @as(f.type, @field(scrobble, f.name)));
+                        try value.put(f.name, @as(f.type, @field(formatted_scrobble, f.name)));
                     }
                     // Note sure why this works for ZMPL, but not for jobs.
-                    try scrobbles_view.append(scrobble);
+                    try scrobbles_view.append(formatted_scrobble);
                 }
             },
             1 => {
@@ -88,7 +97,9 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
                     }
 
                     // Turn SpotifyScrobble into a LastFM scrobble
-                    const formatted_scrobble: ScrobbleTypes.LastFMScrobble = .{ .track = scrobble.master_metadata_track_name.?, .album = scrobble.master_metadata_album_album_name.?, .artist = scrobble.master_metadata_album_artist_name.?, .date = (try zeit.instant(.{ .source = .{ .iso8601 = scrobble.ts } })).unixTimestamp() * 1000 };
+                    const pre_formatted_scrobble: ScrobbleTypes.LastFMScrobble = .{ .track = scrobble.master_metadata_track_name.?, .album = scrobble.master_metadata_album_album_name.?, .artist = scrobble.master_metadata_album_artist_name.?, .date = (try zeit.instant(.{ .source = .{ .iso8601 = scrobble.ts } })).unixTimestamp() * 1000 };
+
+                    const formatted_scrobble = rules.applyScrobbleRule(pre_formatted_scrobble, rule_list);
 
                     var value = try scrobbles_data.append(.object);
 

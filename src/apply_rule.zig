@@ -12,7 +12,7 @@ pub fn applyScrobbleRule(scrobble: Scrobble, rules: Rules) Scrobble {
                     inline else => |on| match_found = match_found and std.mem.eql(u8, @field(scrobble, @tagName(on)), cond.match_txt),
                 },
                 .contains => switch (cond.match_on) {
-                    inline else => |on| match_found = match_found and (std.mem.count(u8, @field(scrobble, @tagName(on)), cond.match_txt) > 0),
+                    inline else => |on| match_found = match_found and std.mem.containsAtLeast(u8, @field(scrobble, @tagName(on)), 1, cond.match_txt),
                 },
             }
         }

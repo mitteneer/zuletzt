@@ -16,7 +16,7 @@ If
 <select name="match-on" id="match-on">
 <option value="artist">artist</option>
 <option value="album">album</option>
-<option value="song">song</option>
+<option value="track">song</option>
 </select>
 <select name="match-cond" id="match-cond">
 <option value="is">is</option>
@@ -24,6 +24,10 @@ If
 <option value="matches">matches regex</option>
 </select>
 <input type="text" name="match-txt" id="match-txt">
+<label for="case-sens">Toggle case sensitivity</label>
+<input type="checkbox" name="case-sens" id="case-sens">
+<label for="accent-sens">Toggle diacritic sensitivity</label>
+<input type="checkbox" name="accent-sens" id="accent-sens">
 <button type="button" onclick="condAdd()">
         Add Conditional
 </button>
@@ -87,7 +91,7 @@ then
 <select name="action-on" id="action-on">
 <option value="artist">artist</option>
 <option value="album">album</option>
-<option value="song">song</option>
+<option value="track">song</option>
 </select>
 with
 <input type="text" name="action-txt" id="action-txt">
