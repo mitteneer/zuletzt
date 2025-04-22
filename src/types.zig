@@ -35,8 +35,9 @@ pub const SpotifyScrobble = struct {
     incognito_mode: ?bool,
 };
 
-const Rule = struct {
+pub const Rule = struct {
     name: []const u8,
+    cond_req: enum { any, all },
     conditionals: []struct {
         match_on: ScrobbleFields,
         match_cond: enum { is, contains },

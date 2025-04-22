@@ -2,17 +2,33 @@ const std = @import("std");
 const Scrobble = @import("./types.zig").LastFMScrobble;
 const Rules = @import("./types.zig").Rules;
 
+// Wrapper for containsAtLeast to make the switch below to work
+fn containsAtLeastOne(haystack: []const u8, needle: []const u8) bool {
+    return std.mem.containsAtLeast(u8, haystack, 1, needle);
+}
+
+fn eqlDecomped(haystack: []const u8, needle: []const u8) bool {
+    return std.mem.eql(u8, haystack, needle);
+}
+
 pub fn applyScrobbleRule(scrobble: Scrobble, rules: Rules) Scrobble {
-    var match_found: bool = true;
     var output_scrobble: Scrobble = scrobble;
     for (rules.rules) |rule| {
+        var match_found: bool = switch (rule.cond_req) {
+            .any => false,
+            .all => true,
+        };
         for (rule.conditionals) |cond| {
-            switch (cond.match_cond) {
-                .is => switch (cond.match_on) {
-                    inline else => |on| match_found = match_found and std.mem.eql(u8, @field(scrobble, @tagName(on)), cond.match_txt),
+            const match_fn: *const fn ([]const u8, []const u8) bool = switch (cond.match_cond) {
+                .is => eqlDecomped,
+                .contains => containsAtLeastOne,
+            };
+            switch (rule.cond_req) {
+                .any => switch (cond.match_on) {
+                    inline else => |on| match_found = match_found or match_fn(@field(scrobble, @tagName(on)), cond.match_txt),
                 },
-                .contains => switch (cond.match_on) {
-                    inline else => |on| match_found = match_found and std.mem.containsAtLeast(u8, @field(scrobble, @tagName(on)), 1, cond.match_txt),
+                .all => switch (cond.match_on) {
+                    inline else => |on| match_found = match_found and match_fn(@field(scrobble, @tagName(on)), cond.match_txt),
                 },
             }
         }

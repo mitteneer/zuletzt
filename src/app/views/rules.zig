@@ -25,12 +25,17 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
     var job = try request.job("process_rule");
 
     _ = try job.params.put("name", params.get("rule-title"));
+    _ = try job.params.put("cond_req", params.get("cond-req"));
 
     var conditionals = try job.params.put("conditionals", .array);
-    var cond0 = try conditionals.append(.object);
-    try cond0.put("match_on", params.get("match-on"));
-    try cond0.put("match_cond", params.get("match-cond"));
-    try cond0.put("match_txt", params.get("match-txt"));
+    inline for (0..5) |i| {
+        if (!std.mem.eql(u8, "", params.getT(.string, comptime std.fmt.comptimePrint("match-txt{}", .{i})).?)) {
+            var cond = try conditionals.append(.object);
+            try cond.put("match_on", params.get(comptime std.fmt.comptimePrint("match-on{}", .{i})));
+            try cond.put("match_cond", params.get(comptime std.fmt.comptimePrint("match-cond{}", .{i})));
+            try cond.put("match_txt", params.get(comptime std.fmt.comptimePrint("match-txt{}", .{i})));
+        }
+    }
 
     var actions = try job.params.put("actions", .array);
     var act0 = try actions.append(.object);
