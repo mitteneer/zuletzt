@@ -10,7 +10,11 @@
     @for (table_data) |value| {
     <tr>
        <td class=cell>{{value.track}}</td> 
-       <td class=cell>{{value.artist}}</td> 
+       <td class=cell>
+       @for (value.get("artists").?) |artist| {
+       {{artist}}
+       }
+       </td> 
        <td class=cell>{{value.album}}</td> 
        <td class=cell>{{value.date}}</td> 
     </tr>

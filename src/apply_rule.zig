@@ -1,18 +1,32 @@
 const std = @import("std");
-const Scrobble = @import("./types.zig").LastFMScrobble;
 const Rules = @import("./types.zig").Rules;
+const Data = @import("./types.zig");
 
 // Wrapper for containsAtLeast to make the switch below to work
-fn containsAtLeastOne(haystack: []const u8, needle: []const u8) bool {
+fn containsWrapper(haystack: []const u8, needle: []const u8) bool {
     return std.mem.containsAtLeast(u8, haystack, 1, needle);
 }
 
-fn eqlDecomped(haystack: []const u8, needle: []const u8) bool {
+fn eqlWrapper(haystack: []const u8, needle: []const u8) bool {
     return std.mem.eql(u8, haystack, needle);
 }
 
-pub fn applyScrobbleRule(scrobble: Scrobble, rules: Rules) Scrobble {
-    var output_scrobble: Scrobble = scrobble;
+pub fn applyScrobbleRule(allocator: std.mem.Allocator, scrobble: Data.ImportedScrobble, rules: Rules) Data.Scrobble {
+    var output_scrobble = Data.Scrobble{
+        .track = scrobble.track,
+        .artists_track = &[_][]const u8{scrobble.artist},
+        .album = scrobble.album,
+        .artists_album = &[_][]const u8{scrobble.artist},
+        .date = scrobble.date,
+    };
+
+    //var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    //const gpalloc = gpa.allocator();
+
+    //var arena = std.heap.ArenaAllocator.init(gpalloc);
+    //defer arena.deinit();
+    //const allocator = arena.allocator();
+
     for (rules.rules) |rule| {
         var match_found: bool = switch (rule.cond_req) {
             .any => false,
@@ -20,8 +34,8 @@ pub fn applyScrobbleRule(scrobble: Scrobble, rules: Rules) Scrobble {
         };
         for (rule.conditionals) |cond| {
             const match_fn: *const fn ([]const u8, []const u8) bool = switch (cond.match_cond) {
-                .is => eqlDecomped,
-                .contains => containsAtLeastOne,
+                .is => eqlWrapper,
+                .contains => containsWrapper,
             };
             switch (rule.cond_req) {
                 .any => switch (cond.match_on) {
@@ -35,9 +49,22 @@ pub fn applyScrobbleRule(scrobble: Scrobble, rules: Rules) Scrobble {
         if (match_found) {
             for (rule.actions) |act| {
                 switch (act.action) {
-                    .add => {},
+                    .add => {
+                        var al = std.ArrayList([]const u8).init(allocator);
+                        switch (act.action_on) {
+                            .album, .track => unreachable,
+                            inline else => |on| {
+                                // I have decided an error won't happen :)
+                                al.appendSlice(@field(output_scrobble, @tagName(on))) catch unreachable;
+                                al.append(act.action_txt) catch unreachable;
+                                const artists = al.toOwnedSlice() catch unreachable;
+                                @field(output_scrobble, @tagName(on)) = artists;
+                            },
+                        }
+                    },
                     .replace => switch (act.action_on) {
-                        inline else => |on| @field(output_scrobble, @tagName(on)) = act.action_txt,
+                        inline .album, .track => |on| @field(output_scrobble, @tagName(on)) = act.action_txt,
+                        inline .artists_album, .artists_track => |on| @field(output_scrobble, @tagName(on)) = &[_][]const u8{act.action_txt},
                     },
                 }
             }

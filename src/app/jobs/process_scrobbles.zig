@@ -1,9 +1,7 @@
 const std = @import("std");
 const jetzig = @import("jetzig");
 const jetquery = @import("jetzig").jetquery;
-const Scrobble = @import("../../types.zig").LastFMScrobble;
 const lastfm = @import("../../types.zig").LastFM;
-//const Rules = @import("../../types.zig").Rules;
 const Data = @import("../../types.zig");
 const rules = @import("../../apply_rule.zig");
 
@@ -18,26 +16,50 @@ const rules = @import("../../apply_rule.zig");
 //              - environment: Enum of `{ production, development }`.
 pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig.jobs.JobEnv) !void {
     //_ = env;
-    _ = allocator;
     if (params.getT(.array, "scrobbles")) |scrobbles| {
         for (scrobbles.items()) |item| {
-            //const fixed_date: u32 = @as(u32, item.getT(.integer, "date").?);
-            const scrobble: Scrobble = .{ .track = item.getT(.string, "track").?, .artist = item.getT(.string, "artist").?, .album = item.getT(.string, "album") orelse "", .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").? * 1000)))) };
+            //var buffer: [256**4]u8 = undefined;
+            //var fba = std.heap.FixedBufferAllocator.init(&buffer);
+            //const alloc = fba.allocator();
 
-            // Make hashes
-            //const album_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.album)));
-            //const artist_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.artist)));
-            //const song_hash = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.track)));
+            var alssu8 = std.ArrayList([]const u8).init(allocator);
+            defer alssu8.deinit();
 
-            // Create a buffer to hold the metadata to hash. Numbers based on the title of a
-            // particularly long Sufjan Stevens song title, and we're gonna pray the metadata
-            // does not exceed three times it's length.
-            var buffer = [_]u8{undefined} ** (288 * 3);
-            const artist_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(scrobble.artist)));
-            const album_prehash = try std.fmt.bufPrint(&buffer, "{s}{s}", .{ scrobble.artist, scrobble.album });
-            const album_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(album_prehash)));
-            const song_prehash = try std.fmt.bufPrint(&buffer, "{s}{s}{s}", .{ scrobble.artist, scrobble.album, scrobble.track });
-            const song_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(song_prehash)));
+            for (item.getT(.array, "artists_track").?.items()) |artist| {
+                try alssu8.append(try artist.coerce([]const u8));
+            }
+
+            const track_artists = try alssu8.toOwnedSlice();
+
+            for (item.getT(.array, "artists_album").?.items()) |artist| {
+                try alssu8.append(try artist.coerce([]const u8));
+            }
+
+            const album_artists = try alssu8.toOwnedSlice();
+
+            const scrobble: Data.Scrobble = .{
+                .track = item.getT(.string, "track").?,
+                .artists_track = track_artists,
+                .album = item.getT(.string, "album") orelse "",
+                .artists_album = album_artists,
+                .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").? * 1000)))),
+            };
+
+            var id_prehash = std.ArrayList(u8).init(allocator);
+            defer id_prehash.deinit();
+
+            var alartist = std.ArrayList(struct { name: []const u8, id: i32 }).init(allocator);
+            defer alartist.deinit();
+
+            for (scrobble.artists_track) |artist| {
+                //try id_prehash.appendSlice(artist);
+                try alartist.append(.{ .name = artist, .id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(artist))) });
+            }
+            //const artist_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(id_prehash.items)));
+            try id_prehash.appendSlice(scrobble.album);
+            const album_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(id_prehash.items)));
+            try id_prehash.appendSlice(scrobble.track);
+            const song_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(id_prehash.items)));
 
             // Make IDs
             // Song:    Song hash XOR artist hash XOR album hash
@@ -65,64 +87,121 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
 
             //var album_id: i32 = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(formed)));
             //const song_id = (song_hash ^ artist_hash ^ album_hash);
+            var albumsong = try jetzig.database.Query(.Albumsong)
+                .findBy(.{
+                    .album_id = album_id,
+                    .song_id = song_id,
+                })
+                .select(.{.id})
+                .execute(env.repo);
 
-            var albumsong = try jetzig.database.Query(.Albumsong).findBy(.{ .album_id = album_id, .song_id = song_id }).select(.{.id}).execute(env.repo);
-            var ins_album = try jetzig.database.Query(.Album).find(album_id).select(.{.id}).execute(env.repo);
+            var ins_album = try jetzig.database.Query(.Album)
+                .find(album_id)
+                .select(.{.id})
+                .execute(env.repo);
 
-            var ins_artist = try jetzig.database.Query(.Artist).find(artist_id).select(.{.id}).execute(env.repo);
-            if (ins_artist == null) ins_artist = try jetzig.database.Query(.Artist).insert(.{ .id = artist_id, .name = scrobble.artist, .disambiguation = null }).returning(.{.id}).execute(env.repo);
+            for (alartist.items) |artist| {
+                var ins_artist = try jetzig.database.Query(.Artist)
+                    .find(artist.id)
+                    .select(.{.id})
+                    .execute(env.repo);
 
-            if (albumsong == null) {
-                var ins_song = try jetzig.database.Query(.Song).find(song_id).select(.{.id}).execute(env.repo);
-                if (ins_song == null) ins_song = try jetzig.database.Query(.Song).insert(.{ .id = song_id, .name = scrobble.track, .length = null, .hidden = false }).returning(.{.id}).execute(env.repo);
+                if (ins_artist == null) ins_artist = try jetzig.database.Query(.Artist)
+                    .insert(.{
+                        .id = artist.id,
+                        .name = artist.name,
+                        .disambiguation = null,
+                    })
+                    .returning(.{.id})
+                    .execute(env.repo);
 
-                if (ins_album == null) {
-                    ins_album = try jetzig.database.Query(.Album).insert(.{ .id = album_id, .name = scrobble.album, .length = null }).returning(.{.id}).execute(env.repo);
-                    // I think there's still technically a bug here when you have a different artist but I'm not sure
-                    try jetzig.database.Query(.Artistalbum).insert(.{ .artist_id = ins_artist.?.id, .album_id = ins_album.?.id }).execute(env.repo);
+                if (albumsong == null) {
+                    var ins_song = try jetzig.database.Query(.Song)
+                        .find(song_id)
+                        .select(.{.id})
+                        .execute(env.repo);
+
+                    if (ins_song == null) ins_song = try jetzig.database.Query(.Song)
+                        .insert(.{
+                            .id = song_id,
+                            .name = scrobble.track,
+                            .length = null,
+                            .hidden = false,
+                        })
+                        .returning(.{.id})
+                        .execute(env.repo);
+
+                    if (ins_album == null) {
+                        ins_album = try jetzig.database.Query(.Album)
+                            .insert(.{
+                                .id = album_id,
+                                .name = scrobble.album,
+                                .length = null,
+                            })
+                            .returning(.{.id})
+                            .execute(env.repo);
+                        // I think there's still technically a bug here when you have a different artist but I'm not sure
+                        try jetzig.database.Query(.Artistalbum)
+                            .insert(.{
+                                .artist_id = ins_artist.?.id,
+                                .album_id = ins_album.?.id,
+                            })
+                            .execute(env.repo);
+                    }
+
+                    albumsong = try jetzig.database.Query(.Albumsong)
+                        .insert(.{
+                            .song_id = ins_song.?.id,
+                            .album_id = ins_album.?.id,
+                        })
+                        .returning(.{.id})
+                        .execute(env.repo);
+
+                    try jetzig.database.Query(.Albumsongsartist)
+                        .insert(.{
+                            .albumsong_id = albumsong.?.id,
+                            .artist_id = ins_artist.?.id,
+                        })
+                        .execute(env.repo);
+                } else {
+                    const ins_albumsongartist = try jetzig.database.Query(.Albumsongsartist)
+                        .findBy(.{
+                            .albumsong_id = albumsong.?.id,
+                            .artist_id = ins_artist.?.id,
+                        })
+                        .select(.{.id})
+                        .execute(env.repo);
+
+                    if (ins_albumsongartist == null) try jetzig.database.Query(.Albumsongsartist)
+                        .insert(.{
+                            .albumsong_id = albumsong.?.id,
+                            .artist_id = ins_artist.?.id,
+                        })
+                        .execute(env.repo);
+
+                    const ins_artistalbum = try jetzig.database.Query(.Artistalbum)
+                        .findBy(.{
+                            .album_id = ins_album.?.id,
+                            .artist_id = ins_artist.?.id,
+                        })
+                        .select(.{.id})
+                        .execute(env.repo);
+
+                    if (ins_artistalbum == null) try jetzig.database.Query(.Artistalbum)
+                        .insert(.{
+                            .album_id = ins_album.?.id,
+                            .artist_id = ins_artist.?.id,
+                        })
+                        .execute(env.repo);
                 }
-
-                albumsong = try jetzig.database.Query(.Albumsong).insert(.{ .song_id = ins_song.?.id, .album_id = ins_album.?.id }).returning(.{.id}).execute(env.repo);
-
-                try jetzig.database.Query(.Albumsongsartist).insert(.{ .albumsong_id = albumsong.?.id, .artist_id = ins_artist.?.id }).execute(env.repo);
-            } else {
-                const ins_albumsongartist = try jetzig.database.Query(.Albumsongsartist).findBy(.{ .albumsong_id = albumsong.?.id, .artist_id = ins_artist.?.id }).select(.{.id}).execute(env.repo);
-                if (ins_albumsongartist == null) try jetzig.database.Query(.Albumsongsartist).insert(.{ .albumsong_id = albumsong.?.id, .artist_id = ins_artist.?.id }).execute(env.repo);
-
-                const ins_artistalbum = try jetzig.database.Query(.Artistalbum).findBy(.{ .album_id = ins_album.?.id, .artist_id = ins_artist.?.id }).select(.{.id}).execute(env.repo);
-                if (ins_artistalbum == null) try jetzig.database.Query(.Artistalbum).insert(.{ .album_id = ins_album.?.id, .artist_id = ins_artist.?.id }).execute(env.repo);
             }
 
-            //if (ins_artist_id == null) {
-            //    ins_artist_id = try jetzig.database.Query(.Artist).insert(.{ .id = artist_id, .name = scrobble.artist, .disambiguation = null }).returning(.{.id}).execute(env.repo);
-            //    try jetzig.database.Query(.Albumsongartist).insert(.{ .albumsong_id = albumsong_id, .artist_id = ins_artist_id });
-            //    try jetzig.database.Query(.Artistalbum).insert(.{ .artist_id = ins_artist_id, .album_id = ins_album_id });
-            //}
-
-            try jetzig.database.Query(.Scrobble).insert(.{ .albumsong = albumsong.?.id, .datetime = scrobble.date }).execute(env.repo);
+            try jetzig.database.Query(.Scrobble)
+                .insert(.{
+                    .albumsong = albumsong.?.id,
+                    .datetime = scrobble.date,
+                })
+                .execute(env.repo);
         }
     }
-
-    // I would like to replicate this kind of functionality for several kinds of queries
-    // This one gives me all albums by Dream Theater (it also returns Dream Theater for
-    // each entry, but removing artists.name from the SELECT would remove that)
-    //
-    // SELECT
-    // artists.name, albums.name
-    // FROM
-    // "Albumartists"
-    // INNER JOIN artists
-    // ON "Albumartists".artist_id = artists.id
-    // INNER JOIN albums
-    // ON "Albumartists".album_id = albums.id
-    // WHERE artists.name = 'Dream Theater';
-
-    //const query = jetzig.database.Query(.Artist).include(.artistalbums, .{});
-    //const results = try env.repo.all(query);
-    //defer env.repo.free(results);
-    //for (results) |result| {
-    //    for (result.artistalbums) |artistalbum| {
-    //        std.log.debug("{s}: {any}", .{ result.name, artistalbum.album_id });
-    //    }
-    //}
 }

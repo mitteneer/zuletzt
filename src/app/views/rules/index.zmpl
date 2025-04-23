@@ -52,7 +52,8 @@ then
 <option value="add">add</option>
 </select>
 <select name="action-on" id="action-on">
-<option value="artist">artist</option>
+<option value="artists_track">artist (song)</option>
+<option value="artists_album">artist (album)</option>
 <option value="album">album</option>
 <option value="track">song</option>
 </select>

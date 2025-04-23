@@ -35,12 +35,20 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
     defer rules.deinit();
 
     const file_content = try file_read.readToEndAlloc(allocator, 16_000_000);
-    const content: Data.Rules = try std.json.parseFromSliceLeaky(Data.Rules, allocator, file_content, .{});
-    try rules.appendSlice(content.rules);
-    try rules.append(rule);
     file_read.close();
 
     const file_write: std.fs.File = try std.fs.cwd().openFile("rules.json", .{ .mode = .write_only });
+    if (file_content.len == 0) {
+        const out_rules = Data.Rules{ .rules = &[_]Data.Rule{rule} };
+        const out = try std.json.stringifyAlloc(allocator, out_rules, .{});
+        try file_write.writeAll(out);
+        file_write.close();
+        return;
+    }
+    const content: Data.Rules = try std.json.parseFromSliceLeaky(Data.Rules, allocator, file_content, .{});
+    try rules.appendSlice(content.rules);
+    try rules.append(rule);
+
     const out_rules = Data.Rules{ .rules = rules.items };
     const out = try std.json.stringifyAlloc(allocator, out_rules, .{});
 
