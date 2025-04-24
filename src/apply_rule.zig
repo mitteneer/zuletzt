@@ -20,13 +20,6 @@ pub fn applyScrobbleRule(allocator: std.mem.Allocator, scrobble: Data.ImportedSc
         .date = scrobble.date,
     };
 
-    //var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    //const gpalloc = gpa.allocator();
-
-    //var arena = std.heap.ArenaAllocator.init(gpalloc);
-    //defer arena.deinit();
-    //const allocator = arena.allocator();
-
     for (rules.rules) |rule| {
         var match_found: bool = switch (rule.cond_req) {
             .any => false,
@@ -57,9 +50,11 @@ pub fn applyScrobbleRule(allocator: std.mem.Allocator, scrobble: Data.ImportedSc
                                 // I have decided an error won't happen :)
                                 al.appendSlice(@field(output_scrobble, @tagName(on))) catch unreachable;
                                 al.append(act.action_txt) catch unreachable;
-                                const artists = al.toOwnedSlice() catch unreachable;
-                                @field(output_scrobble, @tagName(on)) = artists;
+                                @field(output_scrobble, @tagName(on)) = al.items;
                             },
+                            //else => {
+                            //    std.log.debug("Adding artists doesn't work yet", .{});
+                            //},
                         }
                     },
                     .replace => switch (act.action_on) {
@@ -73,5 +68,3 @@ pub fn applyScrobbleRule(allocator: std.mem.Allocator, scrobble: Data.ImportedSc
 
     return output_scrobble;
 }
-
-//pub fn applyAlbumRule() !Album {}

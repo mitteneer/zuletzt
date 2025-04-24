@@ -18,41 +18,30 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
     //_ = env;
     if (params.getT(.array, "scrobbles")) |scrobbles| {
         for (scrobbles.items()) |item| {
-            //var buffer: [256**4]u8 = undefined;
-            //var fba = std.heap.FixedBufferAllocator.init(&buffer);
-            //const alloc = fba.allocator();
-
-            var alssu8 = std.ArrayList([]const u8).init(allocator);
-            defer alssu8.deinit();
+            var track_artists_al = std.ArrayList([]const u8).init(allocator);
+            var album_artists_al = std.ArrayList([]const u8).init(allocator);
 
             for (item.getT(.array, "artists_track").?.items()) |artist| {
-                try alssu8.append(try artist.coerce([]const u8));
+                try track_artists_al.append(try artist.coerce([]const u8));
             }
-
-            const track_artists = try alssu8.toOwnedSlice();
 
             for (item.getT(.array, "artists_album").?.items()) |artist| {
-                try alssu8.append(try artist.coerce([]const u8));
+                try album_artists_al.append(try artist.coerce([]const u8));
             }
-
-            const album_artists = try alssu8.toOwnedSlice();
 
             const scrobble: Data.Scrobble = .{
                 .track = item.getT(.string, "track").?,
-                .artists_track = track_artists,
+                .artists_track = track_artists_al.items,
                 .album = item.getT(.string, "album") orelse "",
-                .artists_album = album_artists,
+                .artists_album = album_artists_al.items,
                 .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").? * 1000)))),
             };
 
             var id_prehash = std.ArrayList(u8).init(allocator);
-            defer id_prehash.deinit();
 
             var alartist = std.ArrayList(struct { name: []const u8, id: i32 }).init(allocator);
-            defer alartist.deinit();
 
             for (scrobble.artists_track) |artist| {
-                //try id_prehash.appendSlice(artist);
                 try alartist.append(.{ .name = artist, .id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(artist))) });
             }
             //const artist_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(id_prehash.items)));
