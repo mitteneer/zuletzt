@@ -4,9 +4,6 @@ const Data = @import("../../types.zig");
 
 pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig.jobs.JobEnv) !void {
     _ = env;
-    //_ = params;
-
-    std.log.debug("{s}", .{try params.toJson()});
 
     const rule = try std.json.parseFromSliceLeaky(Data.Rule, allocator, try params.toJson(), .{ .ignore_unknown_fields = true });
 
