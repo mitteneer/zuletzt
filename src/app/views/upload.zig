@@ -38,8 +38,8 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
         });
 
         defer rule_file.close();
-        const file_content = try rule_file.readToEndAlloc(request.allocator, 16_000_000);
-        const rule_list = std.json.parseFromSliceLeaky(Data.Rules, request.allocator, file_content, .{}) catch null;
+        const rule_file_content = try rule_file.readToEndAlloc(request.allocator, 16_000_000);
+        const rule_list = std.json.parseFromSliceLeaky(Data.Rules, request.allocator, rule_file_content, .{}) catch null;
 
         switch (source) {
             0 => {
@@ -51,7 +51,7 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
                     if ((before_limiter or after_limiter) and (scrobble.date > before_limiting_date or scrobble.date < after_limiting_date)) continue :appends;
 
                     const formatted_scrobble = if (rule_list) |rl|
-                        rules.applyScrobbleRule(request.allocator, scrobble, rl)
+                        try rules.applyScrobbleRule(request.allocator, scrobble, rl)
                     else
                         Data.Scrobble{
                             .album = scrobble.album,
@@ -107,9 +107,15 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
                         continue :appends;
                     }
 
-                    const pre_formatted_scrobble: Data.ImportedScrobble = .{ .track = scrobble.master_metadata_track_name.?, .album = scrobble.master_metadata_album_album_name.?, .artist = scrobble.master_metadata_album_artist_name.?, .date = (try zeit.instant(.{ .source = .{ .iso8601 = scrobble.ts } })).unixTimestamp() * 1000 };
+                    const pre_formatted_scrobble: Data.ImportedScrobble = .{
+                        .track = scrobble.master_metadata_track_name.?,
+                        .album = scrobble.master_metadata_album_album_name.?,
+                        .artist = scrobble.master_metadata_album_artist_name.?,
+                        .date = (try zeit.instant(.{ .source = .{ .iso8601 = scrobble.ts } })).unixTimestamp() * 1000,
+                    };
+
                     const formatted_scrobble = if (rule_list) |rl|
-                        rules.applyScrobbleRule(request.allocator, pre_formatted_scrobble, rl)
+                        try rules.applyScrobbleRule(request.allocator, pre_formatted_scrobble, rl)
                     else
                         Data.Scrobble{
                             .album = pre_formatted_scrobble.album,

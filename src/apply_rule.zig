@@ -11,12 +11,14 @@ fn eqlWrapper(haystack: []const u8, needle: []const u8) bool {
     return std.mem.eql(u8, haystack, needle);
 }
 
-pub fn applyScrobbleRule(allocator: std.mem.Allocator, scrobble: Data.ImportedScrobble, rules: Rules) Data.Scrobble {
+pub fn applyScrobbleRule(allocator: std.mem.Allocator, scrobble: Data.ImportedScrobble, rules: Rules) !Data.Scrobble {
+    const artists = try allocator.alloc([]const u8, 1);
+    artists[0] = scrobble.artist;
     var output_scrobble = Data.Scrobble{
         .track = scrobble.track,
-        .artists_track = &[_][]const u8{scrobble.artist},
+        .artists_track = artists,
         .album = scrobble.album,
-        .artists_album = &[_][]const u8{scrobble.artist},
+        .artists_album = artists,
         .date = scrobble.date,
     };
 
@@ -47,10 +49,10 @@ pub fn applyScrobbleRule(allocator: std.mem.Allocator, scrobble: Data.ImportedSc
                         switch (act.action_on) {
                             .album, .track => unreachable,
                             inline else => |on| {
-                                // I have decided an error won't happen :)
-                                al.appendSlice(@field(output_scrobble, @tagName(on))) catch unreachable;
-                                al.append(act.action_txt) catch unreachable;
-                                @field(output_scrobble, @tagName(on)) = al.items;
+                                try al.appendSlice(@field(output_scrobble, @tagName(on)));
+                                try al.append(act.action_txt);
+                                const list = try al.toOwnedSlice();
+                                @field(output_scrobble, @tagName(on)) = list;
                             },
                             //else => {
                             //    std.log.debug("Adding artists doesn't work yet", .{});

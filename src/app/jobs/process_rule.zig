@@ -32,7 +32,6 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
     };
 
     var rules = std.ArrayList(Data.Rule).init(allocator);
-    defer rules.deinit();
 
     const file_content = try file_read.readToEndAlloc(allocator, 16_000_000);
     file_read.close();
