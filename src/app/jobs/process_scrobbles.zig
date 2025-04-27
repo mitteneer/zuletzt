@@ -18,12 +18,25 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
     //_ = env;
     if (params.getT(.array, "scrobbles")) |scrobbles| {
         for (scrobbles.items()) |item| {
+
+            // Probably want to include artist name here, but not sure how to yet
+
             const track_artist_count = item.getT(.array, "artists_track").?.count();
             const album_artist_count = item.getT(.array, "artists_album").?.count();
             var track_artist_name_buffer = try allocator.alloc([]const u8, track_artist_count);
             var album_artist_name_buffer = try allocator.alloc([]const u8, album_artist_count);
             var track_artist_id_buffer = try allocator.alloc(i32, track_artist_count);
             var album_artist_id_buffer = try allocator.alloc(i32, album_artist_count);
+
+            const scrobble: Data.Scrobble = .{
+                .track = item.getT(.string, "track").?,
+                .artists_track = track_artist_name_buffer,
+                .album = item.getT(.string, "album") orelse "",
+                .artists_album = album_artist_name_buffer,
+                .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").? * 1000)))),
+            };
+
+            var id_prehash = std.ArrayList(u8).init(allocator);
 
             for (item.getT(.array, "artists_track").?.items(), 0..track_artist_count) |artist, i| {
                 const artist_name = try artist.coerce([]const u8);
@@ -35,18 +48,8 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
                 const artist_name = try artist.coerce([]const u8);
                 album_artist_name_buffer[i] = artist_name;
                 album_artist_id_buffer[i] = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(artist_name)));
+                try id_prehash.appendSlice(artist_name);
             }
-
-            const scrobble: Data.Scrobble = .{
-                .track = item.getT(.string, "track").?,
-                .artists_track = track_artist_name_buffer,
-                .album = item.getT(.string, "album") orelse "",
-                .artists_album = album_artist_name_buffer,
-                .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").? * 1000)))),
-            };
-
-            // Probably want to include artist name here, but not sure how to yet
-            var id_prehash = std.ArrayList(u8).init(allocator);
 
             try id_prehash.appendSlice(scrobble.album);
             const album_id = @as(i32, @bitCast(std.hash.Fnv1a_32.hash(id_prehash.items)));

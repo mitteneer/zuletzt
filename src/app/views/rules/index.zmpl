@@ -14,8 +14,8 @@ Add a rule below.
 <br>
 Match
 <select name="cond-req" id="cond-req">
-<option value="any">any</option>
-<option value="all">all</option>
+  <option value="any">any</option>
+  <option value="all">all</option>
 </select>
 conditonals.
 <br>
@@ -38,27 +38,22 @@ If
   <input type="checkbox" name="accent-sens{{i}}" id="accent-sens{{i}}">
   <br>
 }
-<button type="button" onclick="condAdd()">
-        Add Conditional
-</button>
-
-<script>
-</script>
-
-<div id="cond-ins"></div>
 then
-<select name="action" id="action">
-<option value="replace">replace</option>
-<option value="add">add</option>
-</select>
-<select name="action-on" id="action-on">
-<option value="artists_track">artist (song)</option>
-<option value="artists_album">artist (album)</option>
-<option value="album">album</option>
-<option value="track">song</option>
-</select>
-with
-<input type="text" name="action-txt" id="action-txt">
+@for (0..5) |i| {
+  <select name="action{{i}}" id="action{{i}}">
+    <option value="replace">replace</option>
+    <option value="add">add</option>
+  </select>
+  <select name="action-on{{i}}" id="action-on{{i}}">
+    <option value="artists_track">artist (song)</option>
+    <option value="artists_album">artist (album)</option>
+    <option value="album">album</option>
+    <option value="track">song</option>
+  </select>
+  with
+  <input type="text" name="action-txt{{i}}" id="action-txt{{i}}">
+  <br>
+}
 <button type="submit" value="Submit">Submit</button>
 </form>
 
