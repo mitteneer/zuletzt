@@ -61,7 +61,11 @@ pub fn applyScrobbleRule(allocator: std.mem.Allocator, scrobble: Data.ImportedSc
                     },
                     .replace => switch (act.action_on) {
                         inline .album, .track => |on| @field(output_scrobble, @tagName(on)) = act.action_txt,
-                        inline .artists_album, .artists_track => |on| @field(output_scrobble, @tagName(on)) = &[_][]const u8{act.action_txt},
+                        inline .artists_album, .artists_track => |on| {
+                            const artist = try allocator.alloc([]const u8, 1);
+                            artist[0] = act.action_txt;
+                            @field(output_scrobble, @tagName(on)) = artist;
+                        },
                     },
                 }
             }

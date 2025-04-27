@@ -14,9 +14,12 @@ pub const jetzig_options = struct {
         // htmx middleware skips layouts when `HX-Target` header is present and issues
         // `HX-Redirect` instead of a regular HTTP redirect when `request.redirect` is called.
         jetzig.middleware.HtmxMiddleware,
-        // Demo middleware included with new projects. Remove once you are familiar with Jetzig's
-        // middleware system.
+            // Demo middleware included with new projects. Remove once you are familiar with Jetzig's
+            // middleware system.
     };
+
+    // This is currently the largest number of parameters one can have in a rule
+    pub const max_multipart_form_fields = 42;
 
     // Maximum bytes to allow in request body.
     pub const max_bytes_request_body: usize = std.math.pow(usize, 2, 24);
