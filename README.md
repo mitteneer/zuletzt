@@ -18,11 +18,14 @@ Licensed under MIT.
         - [ ] List all songs on artist page, with respective album
         - [x] List all albums on artist page
         - [x] Include number of plays for each
+        - [x] List albums features on
     - [x] See all albums under "/albums"
         - [x] See all songs from album
         - [x] Include number of plays
+        - [x] Include name of artist(s)
+        - [ ] Include artists features on each song
     - [x] See all songs under "/songs"
-        - [ ] Include respective artist(s)
+        - [x] Include respective artist(s)
         - [ ] Include respective album[^10]
         - [x] Include number of plays
     - [ ] Create disambiguation pages

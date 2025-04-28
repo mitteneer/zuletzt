@@ -54,9 +54,6 @@ pub fn applyScrobbleRule(allocator: std.mem.Allocator, scrobble: Data.ImportedSc
                                 const list = try al.toOwnedSlice();
                                 @field(output_scrobble, @tagName(on)) = list;
                             },
-                            //else => {
-                            //    std.log.debug("Adding artists doesn't work yet", .{});
-                            //},
                         }
                     },
                     .replace => switch (act.action_on) {

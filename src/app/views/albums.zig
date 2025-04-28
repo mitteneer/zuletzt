@@ -33,6 +33,7 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
             continue :blk;
         }
         var album_view = try albums_view.append(.object);
+
         var artist_infos = try album_view.put("artist_info", .array);
         var artist_info = try artist_infos.append(.object);
         try artist_info.put("name", album.artist_name);

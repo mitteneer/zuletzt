@@ -35,6 +35,7 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
 pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
     var albums_view = try root.put("albums", .array);
+    var appears = try root.put("appears", .array);
     const artist_name = try jetzig.database.Query(.Artist).find(id).select(.{ .id, .name }).execute(request.repo);
     _ = try root.put("artist", artist_name.?.name);
     const query =
@@ -46,6 +47,18 @@ pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
         \\WHERE artistalbums.artist_id = $1
         \\GROUP BY albums.id
         \\ORDER BY scrobbles DESC
+    ;
+
+    const appears_query =
+        \\SELECT albums.name, albums.id, COUNT(scrobbles) AS scrobbles
+        \\FROM artistalbums
+        \\INNER JOIN albums ON albums.id = artistalbums.album_id
+        \\INNER JOIN albumsongs ON albumsongs.album_id = albums.id
+        \\INNER JOIN scrobbles ON scrobbles.albumsong = albumsongs.id
+        \\INNER JOIN albumsongsartists ON albumsongsartists.albumsong_id = albumsongs.id
+        \\WHERE albumsongsartists.artist_id = $1 AND artistalbums.artist_id != $1
+        \\GROUP BY albums.id
+        \\ORDER BY scrobbles DESC;
     ;
 
     var albums_jq_result = try request.repo.executeSql(query, .{id});
@@ -60,30 +73,18 @@ pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
         try album_view.put("url", album.id);
         try album_view.put("scrobbles", album.scrobbles);
     }
-    //const artist = try jetzig.database.Query(.Artist)
-    //    .find(id)
-    //    .select(.{ .id, .name })
-    //    .execute(request.repo);
-    //var root = try request.data(.object);
-    //try root.put("artist", artist.?.name);
-    //var albums_view = try root.put("albums", .array);
-    //const query = jetzig.database.Query(.Albumartist)
-    //    .select(.{.id})
-    //    .include(.album, .{ .select = .{ .name, .id } })
-    //    .join(.inner, .artist)
-    //    .where(.{ .artist = .{ .id = id } });
 
-    //const albums = try request.repo.all(query);
-    //for (albums) |album| {
-    //    const scrobbles = try jetzig.database.Query(.Scrobble)
-    //        .where(.{ .album_id = album.album.id })
-    //        .count()
-    //        .execute(request.repo);
-    //    var album_view = try albums_view.append(.object);
-    //    try album_view.put("name", album.album.name);
-    //    try album_view.put("url", album.album.id);
-    //    try album_view.put("scrobbles", scrobbles);
-    //}
+    var appears_jq_result = try request.repo.executeSql(appears_query, .{id});
+    defer appears_jq_result.deinit();
+
+    while (try appears_jq_result.postgresql.result.next()) |album_row| {
+        const album = try album_row.to(Album, .{ .dupe = true, .allocator = request.allocator });
+        var album_view = try appears.append(.object);
+        try album_view.put("name", album.name);
+        try album_view.put("url", album.id);
+        try album_view.put("scrobbles", album.scrobbles);
+    }
+
     return request.render(.ok);
 }
 

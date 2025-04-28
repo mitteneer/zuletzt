@@ -10,6 +10,7 @@
 <thead>
 <tr>
 <th>Name</th>
+<th>Artist(s)</th>
 <th>Scrobbles</th>
 </tr>
 </thead>
@@ -17,6 +18,11 @@
 @for (.songs) |song| {
   <tr>
   <td class=cell><a href="/songs/{{song.url}}">{{song.name}}</a></td>
+  <td class=cell>
+    @for (song.get("artist_info").?) |ai| {
+      <a href="/artists/{{ai.url}}">{{ai.name}}</a>
+    }
+  </td>
   <td class=cell>{{song.scrobbles}}</td>
   </tr>
 }

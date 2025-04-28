@@ -11,7 +11,7 @@
 <tr>
 <th>Song</th>
 <th>Album</th>
-<th>Date</th>
+<th data-type="date" data-format="DD MMM YYYY, HH:mm">Date</th>
 </tr>
 </thead>
 <tbody>
