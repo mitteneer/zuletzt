@@ -2,7 +2,7 @@ pub const ImportedScrobble = struct {
     track: []const u8,
     artist: []const u8,
     album: []const u8 = "",
-    date: i128,
+    date: u64,
 };
 
 pub const Scrobble = struct {
@@ -10,7 +10,7 @@ pub const Scrobble = struct {
     artists_track: []const []const u8,
     album: []const u8 = "",
     artists_album: []const []const u8,
-    date: i128,
+    date: u64,
 };
 
 // From lastfmstats.com

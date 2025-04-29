@@ -111,7 +111,7 @@ pub fn post(request: *jetzig.Request) !jetzig.View {
                         .track = scrobble.master_metadata_track_name.?,
                         .album = scrobble.master_metadata_album_album_name.?,
                         .artist = scrobble.master_metadata_album_artist_name.?,
-                        .date = (try zeit.instant(.{ .source = .{ .iso8601 = scrobble.ts } })).unixTimestamp() * 1000,
+                        .date = @as(u64, @bitCast((try zeit.instant(.{ .source = .{ .iso8601 = scrobble.ts } })).unixTimestamp() * 1000)),
                     };
 
                     const formatted_scrobble = if (rule_list) |rl|

@@ -35,7 +35,7 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
         try scrobble_view.put("album_name", scrobble.album_name);
         try scrobble_view.put("album_id", scrobble.album_id);
         var date = std.ArrayList(u8).init(request.allocator);
-        try (try zeit.instant(.{ .source = .{ .unix_timestamp = @divFloor(scrobble.date, 1_000_000) } })).time().strftime(date.writer(), "%d %b %Y, %H:%M");
+        try (try zeit.instant(.{ .source = .{ .unix_timestamp = @divFloor(scrobble.date, 1_000) } })).time().strftime(date.writer(), "%d %b %Y, %H:%M");
         try scrobble_view.put("date", date.items);
     }
 
