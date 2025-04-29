@@ -33,7 +33,7 @@ pub fn run(allocator: std.mem.Allocator, params: *jetzig.data.Value, env: jetzig
                 .artists_track = track_artist_name_buffer,
                 .album = item.getT(.string, "album") orelse "",
                 .artists_album = album_artist_name_buffer,
-                .date = @as(u64, @bitCast(@as(i64, @truncate(item.getT(.integer, "date").?)))),
+                .date = @as(i64, @truncate(item.getT(.integer, "date").?)),
             };
 
             var id_prehash = std.ArrayList(u8).init(allocator);
