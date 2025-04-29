@@ -5,7 +5,12 @@
 </head>
 <body>
 @partial partials/header
-<h1>{{.artist}}</h1>
+<h1>{{.artist.name}}</h1>
+{{.artist.scrobbles}} scrobbles ({{.artist.rank}}th place)
+<br>
+First listen: <a href="/songs/{{.first_song_id}}">{{.first_song_name}}</a> ({{.first_song_date}})
+<br>
+Most recent listen: <a href="/songs/{{.last_song_id}}">{{.last_song_name}}</a> ({{.last_song_date}})
 <h2>Albums</h2>
 <table id="myTable">
 <thead>
@@ -16,7 +21,7 @@
 <tbody>
 @for (.albums) |album| {
   <tr>
-  <td class=cell><a href="/albums/{{album.url}}">{{album.name}}</a></td>
+  <td class=cell><a href="/albums/{{album.id}}">{{album.name}}</a></td>
   <td class=cell>{{album.scrobbles}}</td>
   </tr>
 }
@@ -32,7 +37,7 @@
   <tbody>
     @for (.appears) |album| {
       <tr>
-        <td class=cell><a href="/albums/{{album.url}}">{{album.name}}</a></td>
+        <td class=cell><a href="/albums/{{album.id}}">{{album.name}}</a></td>
         <td class=cell>{{album.scrobbles}}</td>
       </tr>
     }
