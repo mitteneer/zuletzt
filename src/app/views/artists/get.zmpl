@@ -6,7 +6,7 @@
 <body>
 @partial partials/header
 <h1>{{.artist.name}}</h1>
-{{.artist.scrobbles}} scrobbles ({{.artist.rank}}th place)
+{{.artist.scrobbles}} scrobbles ({{.artist.rank}} place)
 <br>
 First listen: <a href="/songs/{{.first_song_id}}">{{.first_song_name}}</a> ({{.first_song_date}})
 <br>

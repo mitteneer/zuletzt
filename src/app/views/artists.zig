@@ -2,6 +2,7 @@ const std = @import("std");
 const jetzig = @import("jetzig");
 const jetquery = @import("jetzig").jetquery;
 const dateFmt = @import("../../date_fmt.zig").dateFmt;
+const ordinalFmt = @import("../../ordinal_fmt.zig").ordinalFmt;
 
 pub fn index(request: *jetzig.Request) !jetzig.View {
     var root = try request.data(.object);
@@ -57,7 +58,11 @@ pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
 
     if (try artist_jq_result.postgresql.result.next()) |artist_row| {
         const artist = try artist_row.to(ArtistResult, .{ .dupe = true, .allocator = request.allocator });
-        try root.put("artist", artist);
+        var artist_view = try root.put("artist", .object);
+        try artist_view.put("name", artist.name);
+        try artist_view.put("id", artist.id);
+        try artist_view.put("scrobbles", artist.scrobbles);
+        try artist_view.put("rank", ordinalFmt(request.allocator, artist.rank));
     }
     try artist_jq_result.drain();
 
