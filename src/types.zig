@@ -61,3 +61,11 @@ pub const Rule = struct {
 pub const Rules = struct {
     rules: []const Rule,
 };
+
+pub const Headers = []enum {
+    Song,
+    Album,
+    Artist,
+    Scrobbles,
+    Date,
+};
