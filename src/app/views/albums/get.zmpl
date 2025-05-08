@@ -1,3 +1,8 @@
+@zig {
+  const ColumnChoices = []const enum{song, album, artist, artistlist, scrobbles, date};
+  const columns: ColumnChoices = &.{.song, .scrobbles};
+}
+
 <html>
 <head>
 <meta charset="UTF-8">
@@ -5,15 +10,6 @@
 <body>
 @partial partials/header
 <h1>{{.album}}</h1>
-<table>
-<tr>
-<th>Name</th>
-@for (.songs) |song| {
-  <tr>
-  <td class=cell><a href="/songs/{{song.url}}">{{song.name}}</a></td>
-  <td class=cell>{{song.scrobbles}}</td>
-  </tr>
-}
-</table>
+@partial partials/newtable(T: ColumnChoices, table_data: .songs, columns: columns)
 </body>
 </html>

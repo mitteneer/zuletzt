@@ -138,19 +138,23 @@ pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
     defer first_last_songs_jq_result.deinit();
 
     // These look backwards, but it's correct this way
+    var last_song_view = try root.put("last", .object);
+
     if (try first_last_songs_jq_result.postgresql.result.next()) |last_song_row| {
         const last_song = try last_song_row.to(ScrobbleResult, .{ .dupe = true, .allocator = request.allocator });
-        try root.put("last_song_name", last_song.name);
-        try root.put("last_song_id", last_song.id);
-        try root.put("last_song_date", (try dateFmt(request.allocator, last_song.date)));
-    }
+        try last_song_view.put("name", last_song.name);
+        try last_song_view.put("id", last_song.id);
+        try last_song_view.put("date", (try dateFmt(request.allocator, last_song.date)));
+    } else unreachable;
+
+    var first_song_view = try root.put("first", .object);
 
     if (try first_last_songs_jq_result.postgresql.result.next()) |first_song_row| {
         const first_song = try first_song_row.to(ScrobbleResult, .{ .dupe = true, .allocator = request.allocator });
-        try root.put("first_song_name", first_song.name);
-        try root.put("first_song_id", first_song.id);
-        try root.put("first_song_date", (try dateFmt(request.allocator, first_song.date)));
-    }
+        try first_song_view.put("name", first_song.name);
+        try first_song_view.put("id", first_song.id);
+        try first_song_view.put("date", (try dateFmt(request.allocator, first_song.date)));
+    } else unreachable;
 
     try first_last_songs_jq_result.drain();
 

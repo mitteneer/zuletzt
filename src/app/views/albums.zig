@@ -29,19 +29,19 @@ pub fn index(request: *jetzig.Request) !jetzig.View {
         if (album.id == prev_album_id) {
             var artist_info = try prev_artist_infos.?.append(.object);
             try artist_info.put("name", album.artist_name);
-            try artist_info.put("url", album.artist_id);
+            try artist_info.put("id", album.artist_id);
             continue :blk;
         }
         var album_view = try albums_view.append(.object);
 
+        try album_view.put("name", album.name);
+        try album_view.put("id", album.id);
+        try album_view.put("scrobbles", album.scrobbles);
+
         var artist_infos = try album_view.put("artist_info", .array);
         var artist_info = try artist_infos.append(.object);
         try artist_info.put("name", album.artist_name);
-        try artist_info.put("url", album.artist_id);
-
-        try album_view.put("name", album.name);
-        try album_view.put("url", album.id);
-        try album_view.put("scrobbles", album.scrobbles);
+        try artist_info.put("id", album.artist_id);
 
         prev_artist_infos = artist_infos;
         prev_album_id = album.id;
@@ -74,7 +74,7 @@ pub fn get(id: []const u8, request: *jetzig.Request) !jetzig.View {
         const song = try song_row.to(Song, .{ .dupe = true, .allocator = request.allocator });
         var song_view = try songs_view.append(.object);
         try song_view.put("name", song.name);
-        try song_view.put("url", song.id);
+        try song_view.put("id", song.id);
         try song_view.put("scrobbles", song.scrobbles);
     }
     return request.render(.ok);

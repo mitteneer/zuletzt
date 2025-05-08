@@ -1,18 +1,29 @@
-@args table_data *ZmplValue, table_headers: []enum{Song, Album, Artist, Scrobbles, Date}
+@args T: type, table_data: *ZmplValue, columns: T
 
 <table>
 <thead>
 <tr>
 @zig {
-    for (table_headers) |header| {
+    for (columns) |header| {
         switch (header) {
-            .Artist => {
+            .song => {
+                <th>Song</th>
+            },
+            .album => {
+                <th>Album</th>
+            },
+            .artist => {
+                <th>Artist</th>
+            },
+            .artistlist => {
                 <th>Artist(s)</th>
             },
-            inline else => |other| {
-                const h = @tagName(other);
-                <th>{{h}}</th>
+            .scrobbles => {
+                <th>Scrobbles</th>
             },
+            .date => {
+                <th>Date</th>
+            }
         }
     }
 }
@@ -20,35 +31,38 @@
 </thead>
 <tbody>
 @zig {
-    for (table_data) |data| {
+    const array = table_data.items(.array);
+    for (array) |ent| {
         <tr>
-        for (table_header) |header| {
+        for (columns) |header| {
             switch (header) {
-                .Song => {
+                .song, .album, .artist => {
+                    const path = switch (header) {
+                        .song => "songs",
+                        .album => "albums",
+                        .artist => "artists",
+                        else => unreachable
+                    };
                     <td class=cell>
-                    <a href="/songs/{{data.id}}">{{data.name}}</a>
+                    <a href="/{{path}}/{{ent.id}}">{{ent.name}}</a>
                     </td>
                 },
-                .Album => {
+                .artistlist => {
                     <td class=cell>
-                    <a href="/albums/{{data.id}}">{{data.name}}</a>
-                    </td>
-                },
-                .Artist => {
-                    <td class=cell>
-                    @for (data.get("artist_info").?) |ai| {
-                        <a href="/artists/{{ai.id}}">{{ai.name}}</a>
+                    @for (ent.get("artist_info").?) |artist| {
+                        <a href="/artists/{{artist.id}}">{{artist.name}}</a>
                     }
                     </td>
                 },
-                .Scrobbles => {
-                    <td class=cell>{{data.scrobbles}}</td>
+                .scrobbles => {
+                    <td class=cell>{{ent.scrobbles}}</td>
                 },
-                .Date =>{
-                    <td class=cell>{{data.date}}</td>
+                .date =>{
+                    <td class=cell>{{ent.date}}</td>
                 }
-            };
+            }
         }
+        </tr>
     }
 }
 </tbody>

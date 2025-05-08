@@ -1,40 +1,15 @@
+@zig {
+  const ColumnChoices = []const enum{song, album, artist, artistlist, scrobbles, date};
+  const columns: ColumnChoices = &.{.album, .artistlist, .scrobbles};
+}
+
 <html>
 <head>
-<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
 <meta charset="UTF-8">
 </head>
 <body>
 @partial partials/header
 <h1>Albums</h1>
-<table id="myTable">
-<thead>
-<tr>
-<th>Name</th>
-<th>Artist(s)</th>
-<th>Scrobbles</th>
-</tr>
-</thead>
-</tbody>
-@for (.albums) |album| {
-  <tr>
-  <td class=cell><a href="/albums/{{album.url}}">{{album.name}}</a></td>
-  <td class=cell>
-  @for (album.get("artist_info").?) |ai| {
-    <a href="/artists/{{ai.url}}">{{ai.name}}</a>
-  }
-  </td>
-  <td class=cell>{{album.scrobbles}}</td>
-  </tr>
-}
-</tbody>
-</table>
-<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
-<script>
-    const dataTable = new simpleDatatables.DataTable("#myTable", {
-        searchable: false,
-        perPage: 50,
-        perPageSelect: [25,50,100],
-    });
-</script>
+@partial partials/newtable(T: ColumnChoices, table_data: .albums, columns: columns)
 </body>
 </html>

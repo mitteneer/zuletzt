@@ -62,10 +62,13 @@ pub const Rules = struct {
     rules: []const Rule,
 };
 
-pub const Headers = []enum {
-    Song,
-    Album,
-    Artist,
-    Scrobbles,
-    Date,
-};
+// Can't import types in .zmpl files, so defining this here
+// doesn't really do much (except maybe in the .zig file for views?)
+//pub const HeaderTypes = []enum {
+//    song,
+//    album,
+//    artist,
+//    artistlist,
+//    scrobbles,
+//    date,
+//};
